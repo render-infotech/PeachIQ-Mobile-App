@@ -1,0 +1,159 @@
+// lib/providers/profile_provider.dart
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:peach_iq/Models/profile_model.dart';
+import 'package:peach_iq/constants/api_utils.dart';
+
+class ProfileProvider extends ChangeNotifier {
+  bool _isLoading = false;
+  String? _errorMessage;
+  Profile? _profile;
+
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+  Profile? get profile => _profile;
+
+  String get fullName {
+    final p = _profile;
+    if (p == null) return 'Loading...';
+    final first = p.firstName.trim();
+    final last = p.lastName.trim();
+    if (first.isEmpty && last.isEmpty) return 'Guest User';
+    return [first, last].where((e) => e.isNotEmpty).join(' ').trim();
+  }
+
+  String get email => _profile?.email.trim() ?? '';
+
+  void setProfile(Profile profile) {
+    _profile = profile;
+    notifyListeners();
+  }
+
+  void setFromResponse(ProfileResponse response) {
+    _profile = response.data;
+    notifyListeners();
+  }
+
+  void clear() {
+    _profile = null;
+    _errorMessage = null;
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> fetchMyProfile({String? bearerToken}) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final token = bearerToken ?? await _getBearerToken();
+
+      if (kDebugMode) {
+        print('Using token: ${token != null ? _safePreview(token) : "NULL"}');
+      }
+
+      if (token == null || token.isEmpty) {
+        _errorMessage = 'No authentication token found. Please login.';
+        if (kDebugMode) print('No token available for profile fetch');
+        // Still need to call finally block, so we return instead of throwing
+        return;
+      }
+
+      final uri = Uri.parse(ApiUrls.myProfile());
+      final headers = <String, String>{
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': _formatAuthorizationHeader(token),
+      };
+
+      final resp = await http
+          .get(uri, headers: headers)
+          .timeout(const Duration(seconds: 20));
+
+      if (kDebugMode) {
+        print('Status Code: ${resp.statusCode}');
+        print('Response Body: ${resp.body}');
+      }
+
+      if (resp.statusCode == 200) {
+        final Map<String, dynamic> map =
+            jsonDecode(resp.body) as Map<String, dynamic>;
+        final profileResp = ProfileResponse.fromMap(map);
+        _profile = profileResp.data;
+        _errorMessage = null;
+        if (kDebugMode) print('Profile loaded successfully');
+      } else if (resp.statusCode == 401) {
+        _errorMessage = 'Authentication failed. Please login again.';
+        await _clearStoredToken();
+        if (kDebugMode) print('Authentication failed - token cleared');
+      } else {
+        _errorMessage = 'HTTP ${resp.statusCode}: Failed to load profile.';
+        if (kDebugMode) print('HTTP Error ${resp.statusCode}: ${resp.body}');
+      }
+    } catch (e) {
+      _errorMessage = 'An error occurred. Please check your connection.';
+      if (kDebugMode) print('Exception in fetchMyProfile: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> retry() async {
+    await fetchMyProfile();
+  }
+
+  Future<String?> _getBearerToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+      if (kDebugMode) {
+        print('Access Token: ${_safePreview(accessToken ?? "NULL")}');
+      }
+      return accessToken;
+    } catch (e) {
+      if (kDebugMode) print('Error getting bearer token: $e');
+      return null;
+    }
+  }
+
+  String _safePreview(String token) {
+    if (token.length <= 20) return token;
+    return '${token.substring(0, 10)}...${token.substring(token.length - 10)}';
+  }
+
+  String _formatAuthorizationHeader(String tokenOrHeader) {
+    final t = tokenOrHeader.trim();
+    if (t.isEmpty) {
+      if (kDebugMode) print('⚠️ Empty token provided');
+      return '';
+    }
+    if (t.toLowerCase().startsWith('bearer ')) {
+      return t;
+    }
+    return 'Bearer $t';
+  }
+
+  Future<void> _clearStoredToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('access_token');
+      if (kDebugMode) print('Stored token cleared');
+    } catch (e) {
+      if (kDebugMode) print('Error clearing stored token: $e');
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      clear();
+      await _clearStoredToken();
+      if (kDebugMode) print('User logged out successfully');
+    } catch (e) {
+      if (kDebugMode) print('Error during logout: $e');
+    }
+  }
+}
