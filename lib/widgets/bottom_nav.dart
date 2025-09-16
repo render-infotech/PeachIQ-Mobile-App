@@ -19,8 +19,6 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The SizedBox widget has been removed from here to allow the
-    // BottomNavigationBar to use its natural height.
     return ClipRRect(
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(20),

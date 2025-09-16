@@ -1,12 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:peach_iq/screens/auth/change_password_page.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
-import 'package:peach_iq/routes.dart';
-import 'package:peach_iq/loading/shimmer_gate.dart';
 import 'package:peach_iq/screens/auth/login.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -16,8 +15,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool unavailable = true;
-
   void _handleSignOut(BuildContext context) {
     showDialog(
       context: context,
@@ -36,10 +33,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Provider.of<ProfileProvider>(context, listen: false);
               await profileProvider.logout();
 
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginPage()),
-              );
+              if (mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                  (route) => false,
+                );
+              }
             },
             child: const Text('Sign Out'),
           ),
@@ -76,37 +76,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Padding(
-                          //   padding: EdgeInsets.symmetric(horizontal: 8),
-                          //   child: Text(
-                          //     'Edit Profile',
-                          //     style: TextStyle(
-                          //       fontSize: 19.2,
-                          //       fontWeight: FontWeight.w600,
-                          //       color: Color(0xFF2C2C2C),
-                          //       fontFamily: 'Manrope',
-                          //       letterSpacing: 0.5,
-                          //     ),
-                          //   ),
-                          // ),
                           SizedBox(
                             width: 190,
                           ),
-                          // GestureDetector(
-                          //   onTap: () {
-                          //     AppNavigator.toGeneralSettings(context);
-                          //   },
-                          //   child: const Icon(
-                          //     CupertinoIcons.gear,
-                          //     size: 25,
-                          //     color: Color(0xFF2C2C2C),
-                          //   ),
-                          // ),
                         ],
                       ),
                     ),
 
-                    // Card group
                     _ProfileCardGroup(
                       children: [
                         _ProfileTile(
@@ -115,9 +91,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           iconSize: 26,
                           title: 'Change Password',
                           subtitle: null,
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ChangePasswordScreen(),
+                              ),
+                            );
+                          },
                         ),
-                        // divider,
+
                         SizedBox(
                           height: 8,
                         ),
@@ -133,12 +117,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           height: 8,
                         ),
 
-                        // CHANGED: yellow background + black phone icon
                         _ProfileTile(
-                          color: const Color(0xFFFFB020), // yellow avatar bg
+                          color: const Color(0xFFFFB020),
                           icon: CupertinoIcons.phone_fill,
                           iconSize: 26,
-                          iconColor: Colors.black, // black glyph
+                          iconColor: Colors.black,
                           title: 'Mobile Number',
                           subtitle: '+1-555-555-5555',
                           onTap: () {},
@@ -148,7 +131,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           height: 8,
                         ),
 
-                        // Address tile: light background + purple house glyph
                         _ProfileTile(
                           color: const Color.fromARGB(255, 230, 231, 241),
                           icon: CupertinoIcons.house_fill,
@@ -174,14 +156,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // NEW: Switch Profile option
                         const SizedBox(height: 8),
                         _ProfileTile(
-                          color: const Color(0xFF3B82F6), // blue avatar bg
-                          icon: Icons.switch_account, // switch profile icon
+                          color: const Color(0xFF3B82F6),
+                          icon: Icons.switch_account,
                           iconSize: 26,
                           title: 'Switch Profile',
                           subtitle: 'Change to another profile',
-                          onTap: () {
-                            // TODO: implement switch profile
-                          },
+                          onTap: () {},
                         ),
                       ],
                     ),
@@ -250,7 +230,6 @@ class _ProfileTile extends StatelessWidget {
               child: SvgPicture.asset(
                 svgPath!,
                 fit: BoxFit.contain,
-                // Optional: colorFilter: ColorFilter.mode(iconColor ?? Colors.white, BlendMode.srcIn),
               ),
             )
           : Icon(

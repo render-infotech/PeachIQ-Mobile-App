@@ -4,6 +4,7 @@ import 'package:peach_iq/loading/loading_provider.dart';
 import 'package:peach_iq/loading/shimmer_gate.dart';
 import 'package:peach_iq/models/shift_data_model.dart';
 import 'package:peach_iq/screens/Notifications/inbox_screen.dart';
+import 'package:peach_iq/screens/auth/change_password_page.dart';
 import 'package:peach_iq/screens/auth/forgot_password_page.dart';
 import 'package:peach_iq/screens/auth/login.dart';
 import 'package:peach_iq/screens/home/available_shifts_page.dart';
@@ -23,8 +24,8 @@ import 'package:provider/provider.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
-  static const String login = '/login'; // <-- ADD THIS
-  static const String forgotPassword = '/forgot-password'; // <-- ADD THIS
+  static const String login = '/login';
+  static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
   static const String inbox = '/inbox';
   static const String profile = '/profile';
@@ -36,21 +37,20 @@ class AppRoutes {
   static const String generalSettings = '/general-settings';
   static const String todaysShifts = '/todays-shifts';
   static const String checkIn = '/check-in';
+  static const String changePassword =
+      '/change-password'; // <<< 2. ADD THIS ROUTE CONSTANT
 }
 
 class AppShell extends StatefulWidget {
   final int initialIndex;
   final Widget? child;
-
   const AppShell({super.key, this.initialIndex = 0, this.child});
-
   @override
   State<AppShell> createState() => _AppShellState();
 }
 
 class _AppShellState extends State<AppShell> {
   late int _currentIndex;
-
   static const _indexToRoute = <int, String>{
     0: AppRoutes.home,
     1: AppRoutes.checkin,
@@ -58,7 +58,6 @@ class _AppShellState extends State<AppShell> {
     3: AppRoutes.inbox,
     4: AppRoutes.profile,
   };
-
   final List<Widget> _pages = const [
     HomeScreen(),
     TodaysShiftsScreen(),
@@ -66,7 +65,6 @@ class _AppShellState extends State<AppShell> {
     InboxScreen(),
     SettingsScreen(),
   ];
-
   @override
   void initState() {
     super.initState();
@@ -75,12 +73,9 @@ class _AppShellState extends State<AppShell> {
 
   void _onBottomNavTap(int index) {
     if (_currentIndex == index && widget.child == null) return;
-
     final loadingProvider =
         Provider.of<LoadingProvider>(context, listen: false);
-
     loadingProvider.setLoading(true);
-
     Future.delayed(const Duration(milliseconds: 50), () {
       final route = _indexToRoute[index]!;
       Navigator.pushReplacementNamed(context, route);
@@ -113,21 +108,20 @@ class _AppShellState extends State<AppShell> {
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      // ... (all other cases remain the same)
+
       case AppRoutes.splash:
         return MaterialPageRoute(
           builder: (_) => const SplashScreen(),
         );
-
-      case AppRoutes.login: // <-- ADD THIS CASE
+      case AppRoutes.login:
         return MaterialPageRoute(
           builder: (_) => const LoginPage(),
         );
-
-      case AppRoutes.forgotPassword: // <-- ADD THIS CASE
+      case AppRoutes.forgotPassword:
         return MaterialPageRoute(
           builder: (_) => const ForgotPasswordPage(),
         );
-
       case AppRoutes.home:
         return MaterialPageRoute(
           builder: (_) => const AppShell(initialIndex: 0),
@@ -184,6 +178,13 @@ class AppRouter {
           builder: (_) =>
               const AppShell(initialIndex: 4, child: ProfileScreen()),
         );
+
+      case AppRoutes.changePassword:
+        return MaterialPageRoute(
+          builder: (_) =>
+              const AppShell(initialIndex: 4, child: ChangePasswordScreen()),
+        );
+
       default:
         return MaterialPageRoute(
           builder: (_) => const AppShell(initialIndex: 0),
@@ -209,7 +210,6 @@ class AppNavigator {
     Navigator.pop(context);
   }
 
-  // <-- ADD THIS HELPER METHOD ---
   static Future<void> toForgotPassword(BuildContext context) {
     return pushNamed(context, AppRoutes.forgotPassword);
   }
@@ -236,5 +236,10 @@ class AppNavigator {
 
   static Future<void> toCheckIn(BuildContext context, ShiftData shift) {
     return pushNamed(context, AppRoutes.checkIn, arguments: shift);
+  }
+
+  // <<< 4. ADD THIS HELPER METHOD
+  static Future<void> toChangePassword(BuildContext context) {
+    return pushNamed(context, AppRoutes.changePassword);
   }
 }

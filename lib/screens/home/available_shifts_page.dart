@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:peach_iq/Models/available_shifts_model.dart';
+import 'package:peach_iq/screens/home/available_shift_card.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
-import 'package:peach_iq/widgets/available_shift_card.dart';
 import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/screens/auth/login.dart';
@@ -23,54 +21,6 @@ class _AvailableShiftsState extends State<AvailableShifts> {
       Provider.of<AvailableShiftsProvider>(context, listen: false)
           .fetchAvailableShifts();
     });
-  }
-
-  String _formatDate(DateTime date) {
-    try {
-      return DateFormat('EEEE - MMMM d\'${_getDaySuffix(date.day)}\' yyyy')
-          .format(date);
-    } catch (e) {
-      debugPrint('Error formatting date: $e');
-      return 'Invalid Date';
-    }
-  }
-
-  String _getDaySuffix(int day) {
-    if (day >= 11 && day <= 13) return 'th';
-    switch (day % 10) {
-      case 1:
-        return 'st';
-      case 2:
-        return 'nd';
-      case 3:
-        return 'rd';
-      default:
-        return 'th';
-    }
-  }
-
-  String _formatTime(DateTime dateTime) {
-    try {
-      return DateFormat('h:mm a').format(dateTime);
-    } catch (e) {
-      debugPrint('Error formatting time: $e');
-      return 'Invalid Time';
-    }
-  }
-
-  String _buildTimeLine(Schedule schedule) {
-    try {
-      final startTime = _formatTime(schedule.start);
-      final endTime = _formatTime(schedule.end);
-      final unitInfo =
-          schedule.unitarea != null && schedule.unitarea!.isNotEmpty
-              ? ' - ${schedule.unitarea}'
-              : '';
-      return '$startTime to $endTime$unitInfo';
-    } catch (e) {
-      debugPrint('Error building time line: $e');
-      return 'Time information unavailable';
-    }
   }
 
   void _handleSignOut(BuildContext context) {
@@ -126,9 +76,8 @@ class _AvailableShiftsState extends State<AvailableShifts> {
             Expanded(
               child: Consumer<AvailableShiftsProvider>(
                 builder: (context, shiftsProvider, child) {
-                  // UPDATED: Loading state now shows nothing.
                   if (shiftsProvider.isLoading) {
-                    return const SizedBox.shrink();
+                    return const Center(child: CircularProgressIndicator());
                   }
 
                   if (shiftsProvider.errorMessage != null) {
@@ -138,14 +87,11 @@ class _AvailableShiftsState extends State<AvailableShifts> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.error_outline,
-                                color: Colors.red, size: 48),
-                            const SizedBox(height: 16),
-                            Text('Failed to Load Shifts',
-                                style: Theme.of(context).textTheme.titleLarge),
-                            const SizedBox(height: 8),
-                            Text(shiftsProvider.errorMessage!,
-                                textAlign: TextAlign.center),
+                            Text(
+                              shiftsProvider.errorMessage!,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
                             const SizedBox(height: 24),
                             ElevatedButton.icon(
                               icon: const Icon(Icons.refresh),
@@ -163,16 +109,16 @@ class _AvailableShiftsState extends State<AvailableShifts> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.calendar_today_outlined,
-                              color: Colors.grey[400], size: 48),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No Available Shifts',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
+                          // Icon(Icons.calendar_today_outlined,
+                          //     color: Colors.grey[400], size: 48),
+                          // const SizedBox(height: 16),
+                          // Text(
+                          //   'No Available Shifts',
+                          //   style: Theme.of(context).textTheme.titleLarge,
+                          // ),
                           const SizedBox(height: 8),
                           Text(
-                            'Check back later for new opportunities.',
+                            'No available shifts right now.',
                             textAlign: TextAlign.center,
                             style: TextStyle(color: Colors.grey[600]),
                           ),
@@ -186,14 +132,14 @@ class _AvailableShiftsState extends State<AvailableShifts> {
                     itemCount: shiftsProvider.schedules.length,
                     itemBuilder: (context, index) {
                       final schedule = shiftsProvider.schedules[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 2.0),
-                        child: AvailableShiftCard(
-                          name: 'Shift Available at ${schedule.institution}',
-                          dateLine: _formatDate(schedule.start),
-                          timeLine: _buildTimeLine(schedule),
-                          notifyId: schedule.notifyId!,
-                        ),
+                      return AvailableShiftCard(
+                        name: schedule.name,
+                        dateLine: schedule.dateLine,
+                        timeLine: schedule.timeLine,
+                        notifyId: schedule.notifyId,
+                        role: schedule.role,
+                        shiftType: schedule.shiftType,
+                        unitArea: schedule.unitArea,
                       );
                     },
                   );

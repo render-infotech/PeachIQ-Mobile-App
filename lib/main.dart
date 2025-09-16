@@ -1,6 +1,7 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:peach_iq/Providers/available_shifts_provider.dart';
+import 'package:peach_iq/Providers/chekinout_provider.dart';
 import 'package:peach_iq/Providers/forgot_password_provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/Providers/response_provider.dart';
@@ -32,8 +33,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AvailableShiftsProvider()),
         ChangeNotifierProvider(create: (_) => SchedulesShiftsProvider()),
         ChangeNotifierProvider(create: (_) => WorkAnalysisProvider()),
-        ChangeNotifierProvider(create: (_) => ResponseProvider()),
+        ChangeNotifierProvider(create: (_) => ShiftResponseProvider()),
         ChangeNotifierProvider(create: (_) => ForgotPasswordProvider()),
+        ChangeNotifierProvider(create: (_) => CheckInCheckOutProvider()),
       ],
       child: MaterialApp(
         title: 'Peach iQ',

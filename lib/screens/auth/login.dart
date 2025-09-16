@@ -82,12 +82,11 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-          // END OF MODIFIED SECTION
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
               width: double.infinity,
-              height: 50,
+              height: 600,
               decoration: const BoxDecoration(
                 color: AppColors.primary,
                 borderRadius: BorderRadius.only(

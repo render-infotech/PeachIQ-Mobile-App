@@ -20,7 +20,6 @@ class ScheduleTile extends StatelessWidget {
     this.onTap,
   });
 
-  // Helper to split ordinal token for superscript
   (String prefix, String suffix, String postfix) _splitOrdinal(String input) {
     final parts = input.split(' ');
     if (parts.length < 4) return (input, '', '');

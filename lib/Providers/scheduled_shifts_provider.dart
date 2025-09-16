@@ -1,3 +1,5 @@
+// lib/providers/schedules_shifts_provider.dart
+
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -14,7 +16,7 @@ class SchedulesShiftsProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   List<ScheduledShift> get schedules => _schedules;
 
-  Future<void> fetchScheduledShifts() async {
+  Future<void> fetchScheduledShifts({DateTime? forDate}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -27,8 +29,12 @@ class SchedulesShiftsProvider extends ChangeNotifier {
         throw Exception('Authentication token not found.');
       }
 
-      // IMPORTANT: Add this URL to your api_utils.dart file
-      final uri = Uri.parse(ApiUrls.scheduledShift());
+      final dateToFetch = forDate ?? DateTime.now();
+
+      final uri = Uri.parse(ApiUrls.scheduledShift(
+        month: dateToFetch.month,
+        year: dateToFetch.year,
+      ));
 
       final response = await http.get(
         uri,

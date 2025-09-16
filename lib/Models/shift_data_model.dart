@@ -1,6 +1,5 @@
-// lib/models/shift_data_model.dart
-
 class ShiftData {
+  final int schedulingId;
   final String facility;
   final String floorWing;
   final String dateLine;
@@ -9,6 +8,7 @@ class ShiftData {
   final String shiftTime;
 
   ShiftData({
+    required this.schedulingId,
     required this.facility,
     required this.floorWing,
     required this.dateLine,

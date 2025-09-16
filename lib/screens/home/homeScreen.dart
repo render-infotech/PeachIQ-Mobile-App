@@ -1,11 +1,10 @@
-// lib/screens/home/homeScreen.dart
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:peach_iq/Models/available_shifts_model.dart';
 import 'package:peach_iq/Providers/scheduled_shifts_provider.dart';
 import 'package:peach_iq/loading/loading_provider.dart';
 import 'package:peach_iq/routes.dart';
 import 'package:peach_iq/screens/auth/login.dart';
+import 'package:peach_iq/screens/home/available_shift_card.dart';
 import 'package:peach_iq/screens/home/schedule_tile_widget.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +13,6 @@ import 'package:peach_iq/Providers/available_shifts_provider.dart';
 import 'package:peach_iq/Providers/work_analysis_provider.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/text_button.dart';
-import 'package:peach_iq/widgets/available_shift_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
@@ -34,14 +32,11 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // --- MODIFIED: This method now fully controls its own loading state ---
   Future<void> _checkAuthenticationAndFetchData() async {
     final loadingProvider =
         Provider.of<LoadingProvider>(context, listen: false);
 
     try {
-      // >>>>>>> THIS IS THE NEW LINE <<<<<<<
-      // Show the loader at the start of ANY data fetch for this screen.
       loadingProvider.setLoading(true);
 
       final profileProvider =
@@ -84,64 +79,24 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     } finally {
-      // This correctly hides the loader when everything is done.
       if (mounted) {
         loadingProvider.setLoading(false);
       }
     }
   }
 
-  // --- NO OTHER CHANGES ARE NEEDED IN THE REST OF THE FILE ---
-  // ... all your other methods (_formatDate, build, _handleSignOut, etc.) ...
-  // ... remain exactly the same as you had them. ...
-
   String _formatDate(DateTime date) {
+    return DateFormat('MMMM d, yyyy').format(date);
+  }
+
+  // --- FIX: Changed `Schedule schedule` to `dynamic schedule` ---
+  String _buildTimeLine(dynamic schedule) {
     try {
-      return DateFormat(
-              'EEEE - MMMM d' "'" '${_getDaySuffix(date.day)}' "'" ' yyyy')
-          .format(date);
-    } catch (e) {
-      debugPrint('Error formatting date: $e');
-      return 'Invalid Date';
-    }
-  }
-
-  String _getDaySuffix(int day) {
-    if (day >= 11 && day <= 13) return 'th';
-    switch (day % 10) {
-      case 1:
-        return 'st';
-      case 2:
-        return 'nd';
-      case 3:
-        return 'rd';
-      default:
-        return 'th';
-    }
-  }
-
-  String _formatTime(DateTime dateTime) {
-    try {
-      return DateFormat('h:mm a').format(dateTime);
-    } catch (e) {
-      debugPrint('Error formatting time: $e');
-      return 'Invalid Time';
-    }
-  }
-
-  String _formatShiftTimeRange(DateTime start, DateTime end) {
-    return '${_formatTime(start)} to ${_formatTime(end)}';
-  }
-
-  String _buildTimeLine(Schedule schedule) {
-    try {
-      final startTime = _formatTime(schedule.start);
-      final endTime = _formatTime(schedule.end);
-      final unitInfo =
-          schedule.unitarea != null && schedule.unitarea!.isNotEmpty
-              ? ' - ${schedule.unitarea}'
-              : '';
-      return '$startTime to $endTime$unitInfo';
+      // This will now work for both Schedule and ScheduledShift objects
+      // as long as they both have 'start' and 'end' properties.
+      final startTime = DateFormat('h:mm a').format(schedule.start);
+      final endTime = DateFormat('h:mm a').format(schedule.end);
+      return '$startTime - $endTime';
     } catch (e) {
       debugPrint('Error building time line: $e');
       return 'Time information unavailable';
@@ -192,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 padding: EdgeInsets.all(16.0),
                                 child: Center(
                                     child: Text(
-                                        'Could not load available shifts.')));
+                                        ' could not load available shifts.')));
                           }
                           if (!shiftsProvider.hasSchedules) {
                             return const Padding(
@@ -205,15 +160,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               shiftsProvider.schedules.take(2).toList();
                           return Column(
                             children: shiftsToShow.map((schedule) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 2),
-                                child: AvailableShiftCard(
-                                  name:
-                                      'Shift Available at ${schedule.institution.isNotEmpty ? schedule.institution : 'Unknown Location'}',
-                                  dateLine: _formatDate(schedule.start),
-                                  timeLine: _buildTimeLine(schedule),
-                                  notifyId: schedule.notifyId!,
-                                ),
+                              return AvailableShiftCard(
+                                name: schedule.name,
+                                dateLine: schedule.dateLine,
+                                timeLine: schedule.timeLine,
+                                notifyId: schedule.notifyId,
+                                role: schedule.role,
+                                shiftType: schedule.shiftType,
+                                unitArea: schedule.unitArea,
                               );
                             }).toList(),
                           );
@@ -230,13 +184,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 2),
                       Consumer<SchedulesShiftsProvider>(
                         builder: (context, scheduledShiftsProvider, _) {
-                          if (scheduledShiftsProvider.errorMessage != null) {
-                            return const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Center(
-                                    child:
-                                        Text('Could not load your schedule.')));
-                          }
                           if (scheduledShiftsProvider.schedules.isEmpty) {
                             return const Padding(
                                 padding: EdgeInsets.all(16.0),
@@ -253,8 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 facility: schedule.institution,
                                 floorWing: schedule.unitarea,
                                 dateLine: _formatDate(schedule.start),
-                                time: _formatShiftTimeRange(
-                                    schedule.start, schedule.end),
+                                time: _buildTimeLine(schedule),
                               );
                             }).toList(),
                           );

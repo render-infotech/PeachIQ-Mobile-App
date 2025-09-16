@@ -1,12 +1,13 @@
-// lib/screens/check_in_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:peach_iq/Providers/chekinout_provider.dart';
 import 'package:peach_iq/models/shift_data_model.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/screens/auth/login.dart';
+import 'package:geolocator/geolocator.dart';
 
 class CheckInScreen extends StatefulWidget {
   final ShiftData shift;
@@ -19,6 +20,123 @@ class CheckInScreen extends StatefulWidget {
 class _CheckInScreenState extends State<CheckInScreen> {
   DateTime? _checkInTime;
   DateTime? _checkOutTime;
+  bool _isCheckingIn = false;
+  bool _isCheckingOut = false;
+
+  /// Handles permissions, checks if services are enabled, and gets the current position.
+  Future<Position?> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // 1. Check if location services are enabled on the device.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content:
+                Text('Location services are disabled. Please enable them.')));
+      }
+      return null;
+    }
+
+    // 2. Check for permissions.
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('Location permissions are denied.')));
+        }
+        return null;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+                'Location permissions are permanently denied. Please enable them in settings.')));
+      }
+      return null;
+    }
+
+    // 3. If permissions are granted, get the current position.
+    return await Geolocator.getCurrentPosition();
+  }
+
+  /// Handles the Check-In API call and UI updates.
+  Future<void> _handleCheckIn() async {
+    setState(() => _isCheckingIn = true);
+    final provider = context.read<CheckInCheckOutProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final position = await _getCurrentLocation();
+    if (position == null) {
+      setState(() => _isCheckingIn = false);
+      return;
+    }
+
+    final success = await provider.checkIn(
+      schedulingId: widget.shift.schedulingId,
+      latitude: position.latitude.toString(),
+      longitude: position.longitude.toString(),
+    );
+
+    if (mounted) {
+      if (success) {
+        setState(() => _checkInTime = DateTime.now());
+        messenger.showSnackBar(
+          const SnackBar(
+              content: Text("Checked in successfully!"),
+              backgroundColor: Colors.green),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(
+              content: Text(provider.errorMessage ?? "Failed to check in."),
+              backgroundColor: Colors.red),
+        );
+      }
+      setState(() => _isCheckingIn = false);
+    }
+  }
+
+  Future<void> _handleCheckOut() async {
+    setState(() => _isCheckingOut = true);
+    final provider = context.read<CheckInCheckOutProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final position = await _getCurrentLocation();
+    if (position == null) {
+      setState(() => _isCheckingOut = false);
+      return;
+    }
+
+    final success = await provider.checkOut(
+      schedulingId: widget.shift.schedulingId,
+      latitude: position.latitude.toString(),
+      longitude: position.longitude.toString(),
+    );
+
+    if (mounted) {
+      if (success) {
+        setState(() => _checkOutTime = DateTime.now());
+        messenger.showSnackBar(
+          const SnackBar(
+              content: Text("Checked out successfully!"),
+              backgroundColor: Colors.green),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(
+              content: Text(provider.errorMessage ?? "Failed to check out."),
+              backgroundColor: Colors.red),
+        );
+      }
+      setState(() => _isCheckingOut = false);
+    }
+  }
 
   void _handleSignOut(BuildContext context) {
     showDialog(
@@ -37,9 +155,10 @@ class _CheckInScreenState extends State<CheckInScreen> {
                   Provider.of<ProfileProvider>(context, listen: false);
               await profileProvider.logout();
 
-              Navigator.pushReplacement(
+              Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginPage()),
+                (route) => false,
               );
             },
             child: const Text('Sign Out'),
@@ -125,16 +244,10 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       shift: widget.shift,
                       checkInTime: _checkInTime,
                       checkOutTime: _checkOutTime,
-                      onCheckIn: () {
-                        setState(() {
-                          _checkInTime = DateTime.now();
-                        });
-                      },
-                      onCheckOut: () {
-                        setState(() {
-                          _checkOutTime = DateTime.now();
-                        });
-                      },
+                      isCheckingIn: _isCheckingIn,
+                      isCheckingOut: _isCheckingOut,
+                      onCheckIn: _handleCheckIn,
+                      onCheckOut: _handleCheckOut,
                     ),
                   ],
                 ),
@@ -168,6 +281,8 @@ class _ModernCheckActionsCard extends StatelessWidget {
   final ShiftData shift;
   final DateTime? checkInTime;
   final DateTime? checkOutTime;
+  final bool isCheckingIn;
+  final bool isCheckingOut;
   final VoidCallback onCheckIn;
   final VoidCallback onCheckOut;
 
@@ -175,6 +290,8 @@ class _ModernCheckActionsCard extends StatelessWidget {
     required this.shift,
     this.checkInTime,
     this.checkOutTime,
+    required this.isCheckingIn,
+    required this.isCheckingOut,
     required this.onCheckIn,
     required this.onCheckOut,
   });
@@ -203,15 +320,13 @@ class _ModernCheckActionsCard extends StatelessWidget {
           _ActionSection(
             title: 'Check In',
             location: shift.facility,
-            // shiftTime: shift.shiftTime,
             status: isCheckedIn ? 'Checked In' : 'Ready',
             statusColor: isCheckedIn ? Colors.grey : const Color(0xFF10B981),
             buttonColor: const Color(0xFFF36856),
             buttonText: 'Check In Now',
-            icon: Icons.login_rounded,
             isDisabled: isCheckedIn,
+            isLoading: isCheckingIn,
             onTap: onCheckIn,
-            // Display Check-In time only in this section
             actionTime: isCheckedIn
                 ? 'at ${DateFormat('h:mm a').format(checkInTime!)}'
                 : null,
@@ -233,7 +348,6 @@ class _ModernCheckActionsCard extends StatelessWidget {
           _ActionSection(
             title: 'Check Out',
             location: shift.facility,
-            // shiftTime: shift.shiftTime,
             status: isCheckedOut
                 ? 'Checked out'
                 : (isCheckedIn ? 'Ready' : 'Pending'),
@@ -244,10 +358,9 @@ class _ModernCheckActionsCard extends StatelessWidget {
                     : const Color(0xFFF59E0B)),
             buttonColor: AppColors.primary,
             buttonText: 'Check Out',
-            icon: Icons.logout_rounded,
             isDisabled: !isCheckedIn || isCheckedOut,
+            isLoading: isCheckingOut,
             onTap: onCheckOut,
-            // Display Check-Out time only in this section
             actionTime: isCheckedOut
                 ? 'at ${DateFormat('h:mm a').format(checkOutTime!)}'
                 : null,
@@ -261,26 +374,24 @@ class _ModernCheckActionsCard extends StatelessWidget {
 class _ActionSection extends StatelessWidget {
   final String title;
   final String location;
-  // final String shiftTime;
   final String status;
   final Color statusColor;
   final Color buttonColor;
   final String buttonText;
-  final IconData icon;
   final bool isDisabled;
+  final bool isLoading;
   final VoidCallback onTap;
   final String? actionTime;
 
   const _ActionSection({
     required this.title,
     required this.location,
-    // required this.shiftTime,
     required this.status,
     required this.statusColor,
     required this.buttonColor,
     required this.buttonText,
-    required this.icon,
     this.isDisabled = false,
+    this.isLoading = false,
     required this.onTap,
     this.actionTime,
   });
@@ -316,34 +427,6 @@ class _ActionSection extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
-        // const SizedBox(height: 12),
-        Row(
-          children: [
-            // Container(
-            //   width: 22,
-            //   height: 22,
-            //   decoration: BoxDecoration(
-            //     color: AppColors.primary.withOpacity(0.12),
-            //     shape: BoxShape.circle,
-            //   ),
-            //   // alignment: Alignment.center,
-            //   // child: const Icon(
-            //   //   Icons.access_time_outlined,
-            //   //   size: 12,
-            //   //   color: AppColors.primary,
-            //   // ),
-            // ),
-            // const SizedBox(width: 6),
-            // Text(
-            //   shiftTime,
-            //   style: const TextStyle(
-            //     fontSize: 14,
-            //     fontWeight: FontWeight.w500,
-            //     color: AppColors.black,
-            //   ),
-            // ),
           ],
         ),
         const SizedBox(height: 8),
@@ -393,25 +476,33 @@ class _ActionSection extends StatelessWidget {
             color: isDisabled ? buttonColor.withOpacity(0.3) : buttonColor,
             borderRadius: BorderRadius.circular(14),
             child: InkWell(
-              onTap: isDisabled ? null : onTap,
+              onTap: isDisabled || isLoading ? null : onTap,
               borderRadius: BorderRadius.circular(14),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(icon, color: Colors.white, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      buttonText,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                child: isLoading
+                    ? const Center(
+                        child: SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2.5),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(width: 8),
+                          Text(
+                            buttonText,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
