@@ -36,6 +36,10 @@ class ApiUrls {
   //Check Out
   static String checkOut() => '$baseUrl/caregiver-dashboard/schedule/check-out';
 
+  // Location
+  static String Locations() =>
+      '$baseUrl/caregiver-dashboard/mapped-institutions';
+
   static void debugUrls() {
     print('Base URL: $baseUrl');
     print('Login URL: ${login()}');

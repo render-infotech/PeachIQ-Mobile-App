@@ -18,9 +18,7 @@ class TodaysShiftsScreen extends StatefulWidget {
 }
 
 class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
-  void _handleSignOut(BuildContext context) {
-    // Implement your sign out logic here
-  }
+  void _handleSignOut(BuildContext context) {}
 
   @override
   void initState() {

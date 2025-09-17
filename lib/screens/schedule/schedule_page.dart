@@ -2,12 +2,14 @@
 import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
+import 'package:peach_iq/Models/scheduled_shifts_model.dart';
+import 'package:peach_iq/Providers/calender_provider.dart';
 import 'package:peach_iq/screens/schedule/calender_widget.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
-import 'package:peach_iq/constants/loading/shimmer_gate.dart';
 import 'package:peach_iq/screens/auth/login.dart';
 
 class SchedulePage extends StatefulWidget {
@@ -18,8 +20,8 @@ class SchedulePage extends StatefulWidget {
 }
 
 class _SchedulePageState extends State<SchedulePage> {
-  DateTime? selectedDate; // Selected date controller
-  ShiftAppointment? selectedShift; // Selected shift from calendar
+  DateTime? selectedDate;
+  ShiftAppointment? selectedShift;
 
   void _handleSignOut(BuildContext context) {
     showDialog(
@@ -34,11 +36,9 @@ class _SchedulePageState extends State<SchedulePage> {
           ),
           TextButton(
             onPressed: () async {
-              // Use shared logout method
               final profileProvider =
                   Provider.of<ProfileProvider>(context, listen: false);
               await profileProvider.logout();
-
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -51,39 +51,47 @@ class _SchedulePageState extends State<SchedulePage> {
     );
   }
 
-  // Method to update selected date
   void onDateSelected(DateTime date) {
     setState(() {
       selectedDate = date;
-      // Clear any previous shift; CalenderWidget will set one if the date has schedules
       selectedShift = null;
     });
   }
 
-  // Method to update selected shift from calendar overlay/list
   void onAppointmentSelected(ShiftAppointment appt) {
     setState(() {
       selectedShift = appt;
       selectedDate = appt.startTime;
     });
 
-    // Build display values here (no undefined getters on appt)
-    // TODO: Map these from actual API fields when available
-    final String location = 'Villa Colombo';
-    final String unitBefore = 'West Wing - 8';
-    final String unitSup = 'th';
-    final String unitAfter = ' Floor';
-    final String shiftTime = appt.shiftTime; // non-nullable
-    final String shiftHours = '8 Hours';
-    final String? additionalInfo = null; // set from API when available
+    final provider = Provider.of<CalenderProvider>(context, listen: false);
+
+    ScheduledShift? fullShiftDetails;
+    try {
+      fullShiftDetails = provider.schedules.firstWhere(
+        (shift) => shift.start == appt.startTime,
+      );
+    } catch (e) {
+      print("Error: Could not find the selected shift in the provider. $e");
+      return;
+    }
+
+    final String location = fullShiftDetails.institution;
+    final String unit = fullShiftDetails.unitarea;
+    final String shiftTime =
+        DateFormat('h:mm a').format(fullShiftDetails.start) +
+            ' to ' +
+            DateFormat('h:mm a').format(fullShiftDetails.end);
+    final String shiftHours =
+        '${(fullShiftDetails.end.difference(fullShiftDetails.start).inMinutes / 60).toStringAsFixed(1)} Hours';
+
+    final String? additionalInfo = null;
 
     _showShiftDetailsSheet(
       context,
       date: appt.startTime,
       location: location,
-      unitBefore: unitBefore,
-      unitSup: unitSup,
-      unitAfter: unitAfter,
+      unit: unit,
       shiftTime: shiftTime,
       shiftHours: shiftHours,
       additionalInfo: additionalInfo,
@@ -94,9 +102,7 @@ class _SchedulePageState extends State<SchedulePage> {
     BuildContext context, {
     required DateTime date,
     required String location,
-    required String unitBefore,
-    required String unitSup,
-    required String unitAfter,
+    required String unit,
     required String shiftTime,
     required String shiftHours,
     required String? additionalInfo,
@@ -117,9 +123,7 @@ class _SchedulePageState extends State<SchedulePage> {
             child: _ShiftDetailsSheet(
               date: date,
               location: location,
-              unitBefore: unitBefore,
-              unitSup: unitSup,
-              unitAfter: unitAfter,
+              unit: unit,
               shiftTime: shiftTime,
               shiftHours: shiftHours,
               additionalInfo: additionalInfo,
@@ -135,6 +139,9 @@ class _SchedulePageState extends State<SchedulePage> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
+          // This physics property will prevent the main page from scrolling if it's not needed,
+          // but the GestureDetector below is the primary fix for the calendar.
+          physics: const ClampingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -150,13 +157,18 @@ class _SchedulePageState extends State<SchedulePage> {
               Container(
                 height: 560,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: CalenderWidget(
-                  selectedDate: selectedDate,
-                  onDateSelected: onDateSelected,
-                  onAppointmentSelected: onAppointmentSelected,
+                // REVISED: Added GestureDetector here to stop horizontal swipes from affecting the parent page.
+                child: GestureDetector(
+                  onHorizontalDragStart: (details) {},
+                  onHorizontalDragUpdate: (details) {},
+                  onHorizontalDragEnd: (details) {},
+                  child: CalenderWidget(
+                    selectedDate: selectedDate,
+                    onDateSelected: onDateSelected,
+                    onAppointmentSelected: onAppointmentSelected,
+                  ),
                 ),
               ),
-              // Inline detail cards removed; details appear in the bottom sheet on selection
               const SizedBox(height: 16),
             ],
           ),
@@ -169,9 +181,7 @@ class _SchedulePageState extends State<SchedulePage> {
 class _ShiftDetailsSheet extends StatelessWidget {
   final DateTime date;
   final String location;
-  final String unitBefore;
-  final String unitSup;
-  final String unitAfter;
+  final String unit;
   final String shiftTime;
   final String shiftHours;
   final String? additionalInfo;
@@ -179,15 +189,12 @@ class _ShiftDetailsSheet extends StatelessWidget {
   const _ShiftDetailsSheet({
     required this.date,
     required this.location,
-    required this.unitBefore,
-    required this.unitSup,
-    required this.unitAfter,
+    required this.unit,
     required this.shiftTime,
     required this.shiftHours,
     required this.additionalInfo,
   });
 
-  // Helper method to build formatted date with superscript
   Widget _buildFormattedDate(DateTime date) {
     const months = [
       'January',
@@ -212,11 +219,9 @@ class _ShiftDetailsSheet extends StatelessWidget {
       'Saturday',
       'Sunday',
     ];
-
     String weekday = weekdays[date.weekday - 1];
     String month = months[date.month - 1];
     String suffix = _getDaySuffix(date.day);
-
     return RichText(
       text: TextSpan(
         style: const TextStyle(
@@ -239,7 +244,6 @@ class _ShiftDetailsSheet extends StatelessWidget {
     );
   }
 
-  // Helper method to get day suffix (st, nd, rd, th)
   String _getDaySuffix(int day) {
     if (day >= 11 && day <= 13) return 'th';
     switch (day % 10) {
@@ -254,7 +258,6 @@ class _ShiftDetailsSheet extends StatelessWidget {
     }
   }
 
-  // Helper method to build detail rows (regular)
   Widget _buildDetailRow(String label, String value) {
     return Row(
       children: [
@@ -279,52 +282,6 @@ class _ShiftDetailsSheet extends StatelessWidget {
               fontWeight: FontWeight.w500,
               color: Colors.black87,
             ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Helper method to build detail rows with superscript
-  Widget _buildDetailRowWithSuperscript(
-    String label,
-    String beforeSuperscript,
-    String superscript,
-    String afterSuperscript,
-  ) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 140,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
-            overflow: TextOverflow.visible,
-            maxLines: 1,
-          ),
-        ),
-        RichText(
-          text: TextSpan(
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-            children: [
-              TextSpan(text: beforeSuperscript),
-              TextSpan(
-                text: superscript,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontFeatures: [FontFeature.superscripts()],
-                ),
-              ),
-              TextSpan(text: afterSuperscript),
-            ],
           ),
         ),
       ],
@@ -361,9 +318,9 @@ class _ShiftDetailsSheet extends StatelessWidget {
                     ),
                   ),
                 ),
-                Row(
+                const Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Shift details',
                         style: TextStyle(
@@ -404,12 +361,7 @@ class _ShiftDetailsSheet extends StatelessWidget {
                     children: [
                       _buildDetailRow('LOCATION:', location),
                       const SizedBox(height: 8),
-                      _buildDetailRowWithSuperscript(
-                        'UNIT/BLDG/WING:',
-                        unitBefore,
-                        unitSup,
-                        unitAfter,
-                      ),
+                      _buildDetailRow('UNIT/BLDG/WING:', unit),
                       const SizedBox(height: 8),
                       _buildDetailRow('SHIFT TIME:', shiftTime),
                       const SizedBox(height: 8),

@@ -1,5 +1,3 @@
-// lib/Models/SchedulesShifts_model.dart
-
 import 'dart:convert';
 
 SchedulesShiftsWelcome schedulesShiftsWelcomeFromJson(String str) =>

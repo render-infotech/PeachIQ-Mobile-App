@@ -104,21 +104,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     const SizedBox(height: 8),
 
-                    divider,
-
-                    // Mobile Location switch
-                    _SwitchSettingsTile(
-                      leadingColor: const Color(0xFFFFB020),
-                      leadingIcon: CupertinoIcons.globe,
-                      title: 'Mobile Location',
-                      value: mobileLocation,
-                      onChanged: (v) => setState(() => mobileLocation = v),
-                      activeColor: AppColors.AppSelectedGreen,
-                    ),
-
-                    divider,
-
-                    // About
                     _SettingsTile(
                       leadingColor: const Color(0xFFD7D7F8),
                       leadingIcon: CupertinoIcons.question_circle_fill,
@@ -174,7 +159,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
       ),
-      // Bottom navigation is provided by AppShell when routed via AppRoutes.generalSettings
     );
   }
 }
