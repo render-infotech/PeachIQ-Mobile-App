@@ -7,6 +7,9 @@ class ShiftData {
   final DateTime dateTime;
   final String shiftTime;
 
+  final DateTime? actualCheckIn;
+  final DateTime? actualCheckOut;
+
   ShiftData({
     required this.schedulingId,
     required this.facility,
@@ -15,5 +18,7 @@ class ShiftData {
     required this.time,
     required this.dateTime,
     required this.shiftTime,
+    this.actualCheckIn,
+    this.actualCheckOut,
   });
 }

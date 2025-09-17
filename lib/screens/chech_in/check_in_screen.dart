@@ -23,12 +23,20 @@ class _CheckInScreenState extends State<CheckInScreen> {
   bool _isCheckingIn = false;
   bool _isCheckingOut = false;
 
+  // FIX: Initialize the screen's state from the incoming shift data model.
+  // This ensures the UI correctly reflects the shift's status when the screen loads.
+  @override
+  void initState() {
+    super.initState();
+    _checkInTime = widget.shift.actualCheckIn;
+    _checkOutTime = widget.shift.actualCheckOut;
+  }
+
   /// Handles permissions, checks if services are enabled, and gets the current position.
   Future<Position?> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // 1. Check if location services are enabled on the device.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       if (mounted) {
@@ -39,7 +47,6 @@ class _CheckInScreenState extends State<CheckInScreen> {
       return null;
     }
 
-    // 2. Check for permissions.
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -61,7 +68,6 @@ class _CheckInScreenState extends State<CheckInScreen> {
       return null;
     }
 
-    // 3. If permissions are granted, get the current position.
     return await Geolocator.getCurrentPosition();
   }
 
@@ -76,6 +82,9 @@ class _CheckInScreenState extends State<CheckInScreen> {
       setState(() => _isCheckingIn = false);
       return;
     }
+
+    debugPrint(
+        '📍 Location captured for Check-In: Lat: ${position.latitude}, Lng: ${position.longitude}');
 
     final success = await provider.checkIn(
       schedulingId: widget.shift.schedulingId,
@@ -102,6 +111,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
     }
   }
 
+  /// Handles the Check-Out API call and UI updates.
   Future<void> _handleCheckOut() async {
     setState(() => _isCheckingOut = true);
     final provider = context.read<CheckInCheckOutProvider>();
@@ -112,6 +122,9 @@ class _CheckInScreenState extends State<CheckInScreen> {
       setState(() => _isCheckingOut = false);
       return;
     }
+
+    debugPrint(
+        '📍 Location captured for Check-Out: Lat: ${position.latitude}, Lng: ${position.longitude}');
 
     final success = await provider.checkOut(
       schedulingId: widget.shift.schedulingId,
