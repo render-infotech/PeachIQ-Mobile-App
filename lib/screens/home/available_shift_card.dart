@@ -182,10 +182,8 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
                                       'Scheduling Request from ${widget.name}',
                                   message: '''Role: ${widget.role}
 
-Dates: ${widget.dateLine} – ${widget.dateLine}
-
+Dates: ${widget.dateLine} - ${widget.dateLine}
 Shift: ${widget.shiftType} (${widget.timeLine})
-
 Unit Area: ${widget.unitArea}''',
                                   primaryText: 'Not Interested',
                                   onPrimary: () {

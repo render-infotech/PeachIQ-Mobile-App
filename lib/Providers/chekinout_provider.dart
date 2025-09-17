@@ -43,7 +43,6 @@ class CheckInCheckOutProvider with ChangeNotifier {
 
       if (success) {
         debugPrint("✅ User checked in for schedulingId: $schedulingId");
-        // FIX: Update the internal state upon successful check-in.
         if (_activeShift != null) {
           _activeShift = ShiftData(
             schedulingId: _activeShift!.schedulingId,

@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:peach_iq/Providers/scheduled_shifts_provider.dart';
-import 'package:peach_iq/loading/loading_provider.dart';
+import 'package:peach_iq/constants/loading/loading_provider.dart';
 import 'package:peach_iq/routes.dart';
 import 'package:peach_iq/screens/auth/login.dart';
 import 'package:peach_iq/screens/home/available_shift_card.dart';
@@ -379,13 +379,13 @@ class _AnalysisRow extends StatelessWidget {
                 card(
                   analysisProvider.totalHours.toStringAsFixed(1),
                   'Total Hours',
-                  fontSize: 24.0,
+                  fontSize: 22.0,
                 ),
                 const SizedBox(width: 9),
                 card(
                   '\$${analysisProvider.totalEarnings}',
                   'Total earnings',
-                  fontSize: 24.0,
+                  fontSize: 20.0,
                 ),
               ],
             ),

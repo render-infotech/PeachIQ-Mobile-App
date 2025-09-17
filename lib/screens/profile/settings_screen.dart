@@ -4,7 +4,7 @@ import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
-import 'package:peach_iq/loading/shimmer_gate.dart';
+import 'package:peach_iq/constants/loading/shimmer_gate.dart';
 import 'package:peach_iq/screens/auth/login.dart';
 import 'package:peach_iq/routes.dart';
 

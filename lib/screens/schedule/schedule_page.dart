@@ -7,7 +7,7 @@ import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
-import 'package:peach_iq/loading/shimmer_gate.dart';
+import 'package:peach_iq/constants/loading/shimmer_gate.dart';
 import 'package:peach_iq/screens/auth/login.dart';
 
 class SchedulePage extends StatefulWidget {
@@ -350,7 +350,6 @@ class _ShiftDetailsSheet extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Grab handle + title row
                 Center(
                   child: Container(
                     width: 48,
@@ -374,15 +373,9 @@ class _ShiftDetailsSheet extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // IconButton(
-                    //   icon: const Icon(Icons.close_rounded),
-                    //   onPressed: () => Navigator.of(context).pop(),
-                    // ),
                   ],
                 ),
                 const SizedBox(height: 8),
-
-                // Date card
                 Container(
                   decoration: BoxDecoration(color: AppColors.cardsWhite),
                   padding: const EdgeInsets.all(8),
@@ -404,8 +397,6 @@ class _ShiftDetailsSheet extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-
-                // Details card
                 Container(
                   decoration: BoxDecoration(color: AppColors.cardsWhite),
                   padding: const EdgeInsets.all(8),
@@ -426,8 +417,6 @@ class _ShiftDetailsSheet extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                // Additional Information (only if provided)
                 if ((additionalInfo ?? '').trim().isNotEmpty) ...[
                   const SizedBox(height: 12),
                   const Padding(

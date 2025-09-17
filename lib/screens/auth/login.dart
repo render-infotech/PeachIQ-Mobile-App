@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email and password are required')),
+        const SnackBar(content: Text('Email and Password are Required')),
       );
       return;
     }
@@ -142,7 +142,7 @@ class _LoginPageState extends State<LoginPage> {
                       keyboardType: TextInputType.emailAddress,
                       autofillHints: const [AutofillHints.email],
                       decoration: InputDecoration(
-                        hintText: 'enter email',
+                        hintText: 'Enter Email',
                         filled: true,
                         fillColor: Colors.white.withOpacity(0.25),
                         contentPadding: const EdgeInsets.symmetric(
@@ -188,7 +188,7 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: true,
                       autofillHints: const [AutofillHints.password],
                       decoration: InputDecoration(
-                        hintText: 'enter password',
+                        hintText: 'Enter Password',
                         filled: true,
                         fillColor: Colors.white.withOpacity(0.25),
                         contentPadding: const EdgeInsets.symmetric(

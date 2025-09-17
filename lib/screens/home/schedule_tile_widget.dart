@@ -97,7 +97,6 @@ class ScheduleTile extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        // Superscript date in schedule tile
                         child: split.$2.isEmpty
                             ? Text(
                                 dateLine,

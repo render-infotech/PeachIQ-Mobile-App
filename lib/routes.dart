@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:peach_iq/loading/loading_provider.dart';
-import 'package:peach_iq/loading/shimmer_gate.dart';
+import 'package:peach_iq/constants/loading/loading_provider.dart';
+import 'package:peach_iq/constants/loading/shimmer_gate.dart';
 import 'package:peach_iq/models/shift_data_model.dart';
 import 'package:peach_iq/screens/Notifications/inbox_screen.dart';
 import 'package:peach_iq/screens/auth/change_password_page.dart';
