@@ -217,15 +217,24 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
+                          color: AppColors.black,
                         ),
                       ),
                       DropdownButtonHideUnderline(
                         child: DropdownButton<int>(
                           value: _selectedMonth.year,
+                          dropdownColor: AppColors.white, // MODIFIED
+                          style: const TextStyle(
+                              color: AppColors.black), // MODIFIED
                           items: _yearOptions
                               .map((y) => DropdownMenuItem<int>(
                                     value: y,
-                                    child: Text('$y'),
+                                    child: Text(
+                                      '$y',
+                                      style: TextStyle(
+                                        color: AppColors.black,
+                                      ),
+                                    ),
                                   ))
                               .toList(),
                           onChanged: (int? year) {
@@ -251,15 +260,22 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
+                          color: AppColors.black,
                         ),
                       ),
                       DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: _monthNames[_selectedMonth.month - 1],
+                          dropdownColor: AppColors.white, // MODIFIED
+                          style: const TextStyle(
+                              color: AppColors.black), // MODIFIED
                           items: _monthNames
                               .map((m) => DropdownMenuItem<String>(
                                     value: m,
-                                    child: Text(m),
+                                    child: Text(m,
+                                        style: const TextStyle(
+                                            color:
+                                                AppColors.black)), // MODIFIED
                                   ))
                               .toList(),
                           onChanged: (String? value) {
@@ -322,6 +338,7 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
+                        color: AppColors.black,
                       )),
                   if (_isLocationsLoading)
                     SizedBox(
@@ -332,11 +349,16 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                     DropdownButtonHideUnderline(
                       child: DropdownButton<Location>(
                         value: _selectedLocation,
+                        dropdownColor: AppColors.white, // MODIFIED
+                        style:
+                            const TextStyle(color: AppColors.black), // MODIFIED
                         hint: Text("Select Location"),
                         items: _locations
                             .map((loc) => DropdownMenuItem<Location>(
                                   value: loc,
-                                  child: Text(loc.name),
+                                  child: Text(loc.name,
+                                      style: const TextStyle(
+                                          color: AppColors.black)), // MODIFIED
                                 ))
                             .toList(),
                         onChanged: (Location? value) {

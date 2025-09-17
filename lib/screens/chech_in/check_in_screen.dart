@@ -23,16 +23,14 @@ class _CheckInScreenState extends State<CheckInScreen> {
   bool _isCheckingIn = false;
   bool _isCheckingOut = false;
 
-  // FIX: Initialize the screen's state from the incoming shift data model.
-  // This ensures the UI correctly reflects the shift's status when the screen loads.
   @override
   void initState() {
     super.initState();
+    // Initialize state from the shift data passed to the screen
     _checkInTime = widget.shift.actualCheckIn;
     _checkOutTime = widget.shift.actualCheckOut;
   }
 
-  /// Handles permissions, checks if services are enabled, and gets the current position.
   Future<Position?> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -71,7 +69,6 @@ class _CheckInScreenState extends State<CheckInScreen> {
     return await Geolocator.getCurrentPosition();
   }
 
-  /// Handles the Check-In API call and UI updates.
   Future<void> _handleCheckIn() async {
     setState(() => _isCheckingIn = true);
     final provider = context.read<CheckInCheckOutProvider>();
@@ -94,6 +91,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
 
     if (mounted) {
       if (success) {
+        // This setState call is crucial. It updates the UI.
         setState(() => _checkInTime = DateTime.now());
         messenger.showSnackBar(
           const SnackBar(
@@ -111,7 +109,6 @@ class _CheckInScreenState extends State<CheckInScreen> {
     }
   }
 
-  /// Handles the Check-Out API call and UI updates.
   Future<void> _handleCheckOut() async {
     setState(() => _isCheckingOut = true);
     final provider = context.read<CheckInCheckOutProvider>();
@@ -134,6 +131,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
 
     if (mounted) {
       if (success) {
+        // This updates the UI after a successful checkout.
         setState(() => _checkOutTime = DateTime.now());
         messenger.showSnackBar(
           const SnackBar(
@@ -337,6 +335,7 @@ class _ModernCheckActionsCard extends StatelessWidget {
             statusColor: isCheckedIn ? Colors.grey : const Color(0xFF10B981),
             buttonColor: const Color(0xFFF36856),
             buttonText: 'Check In Now',
+            // This correctly disables the 'Check In' button once checkInTime has a value.
             isDisabled: isCheckedIn,
             isLoading: isCheckingIn,
             onTap: onCheckIn,
@@ -371,6 +370,12 @@ class _ModernCheckActionsCard extends StatelessWidget {
                     : const Color(0xFFF59E0B)),
             buttonColor: AppColors.primary,
             buttonText: 'Check Out',
+            // This logic correctly enables the 'Check Out' button only after the user has checked in,
+            // and disables it again after they have checked out.
+            // It is disabled if:
+            //   - You have NOT checked in yet (!isCheckedIn is true)
+            //   OR
+            //   - You have ALREADY checked out (isCheckedOut is true)
             isDisabled: !isCheckedIn || isCheckedOut,
             isLoading: isCheckingOut,
             onTap: onCheckOut,
