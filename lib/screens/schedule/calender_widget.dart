@@ -679,8 +679,8 @@ class _DayOverlayList extends StatelessWidget {
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? s.color.withOpacity(0.1)
-                        : AppColors.primary.withOpacity(0.6),
+                        ? s.color.withOpacity(0.6)
+                        : AppColors.primary,
                     borderRadius: BorderRadius.circular(2),
                     border: Border.all(
                       color: isSelected ? s.color : Colors.transparent,

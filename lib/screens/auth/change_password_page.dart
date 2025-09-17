@@ -90,7 +90,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         children: [
                           _buildPasswordField(
                             controller: _oldPasswordController,
-                            labelText: 'Old Password',
+                            labelText: 'Currrent Password',
                             isVisible: _isOldPasswordVisible,
                             onVisibilityToggle: () {
                               setState(() {

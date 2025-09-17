@@ -33,6 +33,7 @@ class ScheduledShift {
   String category;
   String workShift;
   String unitarea;
+  int? checkInStatus;
 
   ScheduledShift({
     required this.start,
@@ -42,6 +43,7 @@ class ScheduledShift {
     required this.category,
     required this.workShift,
     required this.unitarea,
+    this.checkInStatus,
   });
 
   factory ScheduledShift.fromJson(Map<String, dynamic> json) => ScheduledShift(
@@ -53,5 +55,6 @@ class ScheduledShift {
         category: json["category"] ?? "Unknown Role",
         workShift: json["work_shift"] ?? "Unknown Shift",
         unitarea: json["unitarea"] ?? "N/A",
+        checkInStatus: json["check_in_status"],
       );
 }

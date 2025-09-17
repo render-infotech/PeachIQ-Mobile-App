@@ -154,7 +154,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 padding: EdgeInsets.all(16.0),
                                 child: Center(
                                     child: Text(
-                                        'No available shifts right now.')));
+                                  'No available shifts right now.',
+                                  style: TextStyle(color: AppColors.black),
+                                )));
                           }
                           final shiftsToShow =
                               shiftsProvider.schedules.take(2).toList();
@@ -188,8 +190,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             return const Padding(
                                 padding: EdgeInsets.all(16.0),
                                 child: Center(
-                                    child:
-                                        Text('You have no upcoming shifts.')));
+                                    child: Text(
+                                  'You have no upcoming shifts.',
+                                  style: TextStyle(color: AppColors.black),
+                                )));
                           }
                           final shiftsToShow = scheduledShiftsProvider.schedules
                               .take(3)
@@ -299,7 +303,7 @@ class _SectionHeader extends StatelessWidget {
             fontWeight: FontWeight.w500,
             fontFamily: 'Manrope',
             letterSpacing: 0.5,
-            color: Color(0xFF2C2C2C),
+            color: AppColors.black,
           ),
         ),
         CompactTextButton(label: actionText, onPressed: onAction),
@@ -365,7 +369,10 @@ class _AnalysisRow extends StatelessWidget {
           children: [
             const Text(
               'Work Analysis - Month to Date',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.black),
             ),
             const SizedBox(height: 9),
             Row(

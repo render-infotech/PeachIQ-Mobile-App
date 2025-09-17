@@ -1,3 +1,5 @@
+// lib/screens/todays_shifts_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
@@ -18,12 +20,15 @@ class TodaysShiftsScreen extends StatefulWidget {
 }
 
 class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
-  void _handleSignOut(BuildContext context) {}
+  void _handleSignOut(BuildContext context) {
+    // Implement sign-out logic here if needed
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Fetches all shifts, which now include the check-in status
       context.read<SchedulesShiftsProvider>().fetchScheduledShifts();
     });
   }
@@ -33,7 +38,7 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
   }
 
   String _formatShiftTime(DateTime start, DateTime end) {
-    final DateFormat format = DateFormat('ha');
+    final DateFormat format = DateFormat('ha'); // e.g., 8AM
     return '${format.format(start)} to ${format.format(end)}';
   }
 
@@ -62,7 +67,6 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
                   if (shiftProvider.isLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
-
                   if (shiftProvider.errorMessage != null) {
                     return Center(
                       child: Column(
@@ -85,9 +89,7 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
                   final todaysShifts = shiftProvider.schedules
                       .where((s) => DateUtils.isSameDay(s.start, now))
                       .map((apiShift) => ShiftData(
-                            // This is the corrected line:
                             schedulingId: apiShift.scheduleId,
-
                             facility: apiShift.institution,
                             floorWing: apiShift.unitarea,
                             dateLine: 'Today',
@@ -96,6 +98,7 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
                             dateTime: apiShift.start,
                             shiftTime:
                                 _formatShiftTime(apiShift.start, apiShift.end),
+                            checkInStatus: apiShift.checkInStatus ?? 0,
                           ))
                       .toList()
                     ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
@@ -140,11 +143,47 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
                                         height: 1, indent: 16, endIndent: 16),
                                     itemBuilder: (context, index) {
                                       final s = todaysShifts[index];
+
+                                      // REVISED: Logic to determine status text and color
+                                      final bool isCheckedIn =
+                                          s.checkInStatus == 1;
+                                      final Color statusColor = isCheckedIn
+                                          ? Color(0xFF16A34A)
+                                          : Color(0xFFF97316);
+                                      final String statusText = isCheckedIn
+                                          ? 'Checked In'
+                                          : 'Pending';
+
                                       return ListTile(
                                         contentPadding:
                                             const EdgeInsets.symmetric(
                                                 horizontal: 16, vertical: 8),
                                         onTap: () => _onSelect(s),
+
+                                        // REVISED: Added a leading widget for status
+                                        leading: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              width: 10,
+                                              height: 10,
+                                              decoration: BoxDecoration(
+                                                color: statusColor,
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              statusText,
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: statusColor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                         title: Text(
                                           s.facility,
                                           style: const TextStyle(

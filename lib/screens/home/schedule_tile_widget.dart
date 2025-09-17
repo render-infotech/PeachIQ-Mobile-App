@@ -80,6 +80,7 @@ class ScheduleTile extends StatelessWidget {
                         style: const TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 18,
+                          color: AppColors.black,
                         ),
                       ),
                       const SizedBox(width: 37),
