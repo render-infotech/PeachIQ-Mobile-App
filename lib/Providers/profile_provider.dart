@@ -2,9 +2,9 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:peach_iq/constants/api_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:peach_iq/Models/profile_model.dart';
-import 'package:peach_iq/constants/api_utils.dart';
 
 class ProfileProvider extends ChangeNotifier {
   bool _isLoading = false;
@@ -58,7 +58,6 @@ class ProfileProvider extends ChangeNotifier {
       if (token == null || token.isEmpty) {
         _errorMessage = 'No authentication token found. Please login.';
         if (kDebugMode) print('No token available for profile fetch');
-        // Still need to call finally block, so we return instead of throwing
         return;
       }
 
@@ -96,6 +95,57 @@ class ProfileProvider extends ChangeNotifier {
     } catch (e) {
       _errorMessage = 'An error occurred. Please check your connection.';
       if (kDebugMode) print('Exception in fetchMyProfile: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> changePassword({
+    required String oldPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final token = await _getBearerToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('No authentication token found. Please login.');
+      }
+
+      final uri = Uri.parse(ApiUrls.ChangePassword());
+      final headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': _formatAuthorizationHeader(token),
+      };
+      final body = jsonEncode({
+        'old_password': oldPassword,
+        'new_password': newPassword,
+        'confirm_password': confirmPassword,
+      });
+
+      final response = await http
+          .post(uri, headers: headers, body: body)
+          .timeout(const Duration(seconds: 20));
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return true; // Success
+      } else {
+        // Handle API errors (like "Invalid old password")
+        final responseBody = jsonDecode(response.body);
+        _errorMessage = responseBody['message'] ?? 'An unknown error occurred.';
+        return false; // Failure
+      }
+    } catch (e) {
+      _errorMessage = 'An error occurred. Please check your connection.';
+      if (kDebugMode) {
+        print('Exception in changePassword: $e');
+      }
+      return false; // Failure
     } finally {
       _isLoading = false;
       notifyListeners();

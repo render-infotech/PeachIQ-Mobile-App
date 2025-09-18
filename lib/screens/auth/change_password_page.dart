@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:peach_iq/shared/themes/Appcolors.dart'; // Assuming you have this
-import 'package:peach_iq/widgets/header_card_widget.dart'; // Assuming you have this
+import 'package:peach_iq/shared/themes/Appcolors.dart';
+import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
-import 'package:peach_iq/Providers/profile_provider.dart'; // Assuming you have this
+import 'package:peach_iq/Providers/profile_provider.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -29,30 +29,47 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     super.dispose();
   }
 
-  void _handleChangePassword() {
-    // Dismiss the keyboard
+  Future<void> _handleChangePassword() async {
     FocusScope.of(context).unfocus();
 
-    // Validate the form
     if (_formKey.currentState!.validate()) {
-      // --- PASSWORD CHANGE LOGIC GOES HERE ---
+      final provider = context.read<ProfileProvider>();
+      final messenger = ScaffoldMessenger.of(context);
+      final navigator = Navigator.of(context);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password changed successfully!'),
-          backgroundColor: Colors.green,
-        ),
+      final success = await provider.changePassword(
+        oldPassword: _oldPasswordController.text,
+        newPassword: _newPasswordController.text,
+        confirmPassword: _confirmPasswordController.text,
       );
+
+      if (mounted) {
+        if (success) {
+          messenger.showSnackBar(
+            const SnackBar(
+              content: Text('Password changed successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          navigator.pop();
+        } else {
+          messenger.showSnackBar(
+            SnackBar(
+              content:
+                  Text(provider.errorMessage ?? 'Failed to change password.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // <<< KEY CHANGE: Wrapped the Container with a Material widget to fix the error.
     return Material(
       child: Container(
-        color:
-            const Color(0xFFF8FAFC), // Sets the background color for this view
+        color: const Color(0xFFF8FAFC),
         child: SafeArea(
           child: Column(
             children: [
@@ -61,9 +78,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   name: p.fullName,
                   subtitle: p.email.isNotEmpty ? p.email : null,
                   pageheader: 'Change Password',
-                  onSignOut: () {
-                    // This can be adapted or removed as needed for this screen
-                  },
+                  onSignOut: () {},
                 ),
               ),
               Expanded(
@@ -90,16 +105,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         children: [
                           _buildPasswordField(
                             controller: _oldPasswordController,
-                            labelText: 'Currrent Password',
+                            labelText: 'Current Password',
                             isVisible: _isOldPasswordVisible,
                             onVisibilityToggle: () {
-                              setState(() {
-                                _isOldPasswordVisible = !_isOldPasswordVisible;
-                              });
+                              setState(() => _isOldPasswordVisible =
+                                  !_isOldPasswordVisible);
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter your old password.';
+                                return 'Please enter your current password.';
                               }
                               return null;
                             },
@@ -110,16 +124,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             labelText: 'New Password',
                             isVisible: _isNewPasswordVisible,
                             onVisibilityToggle: () {
-                              setState(() {
-                                _isNewPasswordVisible = !_isNewPasswordVisible;
-                              });
+                              setState(() => _isNewPasswordVisible =
+                                  !_isNewPasswordVisible);
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter a new password.';
-                              }
-                              if (value.length < 8) {
-                                return 'Password must be at least 8 characters long.';
                               }
                               return null;
                             },
@@ -130,10 +140,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             labelText: 'Confirm New Password',
                             isVisible: _isConfirmPasswordVisible,
                             onVisibilityToggle: () {
-                              setState(() {
-                                _isConfirmPasswordVisible =
-                                    !_isConfirmPasswordVisible;
-                              });
+                              setState(() => _isConfirmPasswordVisible =
+                                  !_isConfirmPasswordVisible);
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -146,28 +154,42 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             },
                           ),
                           const SizedBox(height: 32),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _handleChangePassword,
-                              style: ElevatedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                backgroundColor: AppColors
-                                    .primary, // Use your app's primary color
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                          Consumer<ProfileProvider>(
+                            builder: (context, provider, child) {
+                              return SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: provider.isLoading
+                                      ? null
+                                      : _handleChangePassword,
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
+                                    backgroundColor: AppColors.primary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: provider.isLoading
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const Text(
+                                          'Update Password',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
                                 ),
-                              ),
-                              child: const Text(
-                                'Update Password',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -192,6 +214,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return TextFormField(
       controller: controller,
       obscureText: !isVisible,
+      // MODIFIED: Added this style to set the input text color.
+      style: const TextStyle(color: AppColors.black),
       decoration: InputDecoration(
         labelText: labelText,
         labelStyle: const TextStyle(color: Color(0xFF475569)),

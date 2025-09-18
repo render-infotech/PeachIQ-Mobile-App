@@ -40,6 +40,9 @@ class ApiUrls {
   static String Locations() =>
       '$baseUrl/caregiver-dashboard/mapped-institutions';
 
+// Change Password
+  static String ChangePassword() => '$baseUrl/users/change-password';
+
   static void debugUrls() {
     print('Base URL: $baseUrl');
     print('Login URL: ${login()}');
