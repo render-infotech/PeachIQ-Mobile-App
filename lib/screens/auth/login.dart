@@ -53,7 +53,10 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Signed in successfully'),
+          content: Text(
+            'Signed in successfully',
+            style: const TextStyle(color: AppColors.white),
+          ),
           backgroundColor: Colors.green,
         ),
       );

@@ -47,7 +47,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         if (success) {
           messenger.showSnackBar(
             const SnackBar(
-              content: Text('Password changed successfully!'),
+              content: Text(
+                'Password changed successfully!',
+                style: TextStyle(color: AppColors.white),
+              ),
               backgroundColor: Colors.green,
             ),
           );
@@ -55,8 +58,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         } else {
           messenger.showSnackBar(
             SnackBar(
-              content:
-                  Text(provider.errorMessage ?? 'Failed to change password.'),
+              content: Text(
+                provider.errorMessage ?? 'Failed to change password.',
+                style: TextStyle(color: AppColors.white),
+              ),
               backgroundColor: Colors.red,
             ),
           );

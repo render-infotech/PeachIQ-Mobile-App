@@ -76,9 +76,12 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
 
       messenger.showSnackBar(
         SnackBar(
-          content: Text(success
-              ? 'Caregiver status updated successfully'
-              : responseProvider.errorMessage ?? 'An unknown error occurred.'),
+          content: Text(
+            success
+                ? 'Caregiver status updated successfully'
+                : responseProvider.errorMessage ?? 'An unknown error occurred.',
+            style: const TextStyle(color: AppColors.white),
+          ),
           backgroundColor: success ? Colors.green : Colors.red,
         ),
       );

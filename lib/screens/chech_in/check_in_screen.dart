@@ -95,13 +95,19 @@ class _CheckInScreenState extends State<CheckInScreen> {
         setState(() => _checkInTime = DateTime.now());
         messenger.showSnackBar(
           const SnackBar(
-              content: Text("Checked in successfully!"),
+              content: Text(
+                "Checked in successfully!",
+                style: const TextStyle(color: AppColors.white),
+              ),
               backgroundColor: Colors.green),
         );
       } else {
         messenger.showSnackBar(
           SnackBar(
-              content: Text(provider.errorMessage ?? "Failed to check in."),
+              content: Text(
+                provider.errorMessage ?? "Failed to check in.",
+                style: TextStyle(color: AppColors.white),
+              ),
               backgroundColor: Colors.red),
         );
       }
@@ -135,13 +141,19 @@ class _CheckInScreenState extends State<CheckInScreen> {
         setState(() => _checkOutTime = DateTime.now());
         messenger.showSnackBar(
           const SnackBar(
-              content: Text("Checked out successfully!"),
+              content: Text(
+                "Checked out successfully!",
+                style: const TextStyle(color: AppColors.white),
+              ),
               backgroundColor: Colors.green),
         );
       } else {
         messenger.showSnackBar(
           SnackBar(
-              content: Text(provider.errorMessage ?? "Failed to check out."),
+              content: Text(
+                provider.errorMessage ?? "Failed to check out.",
+                style: TextStyle(color: AppColors.white),
+              ),
               backgroundColor: Colors.red),
         );
       }
