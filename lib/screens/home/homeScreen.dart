@@ -343,8 +343,8 @@ class _AnalysisRow extends StatelessWidget {
                           color: Colors.black87)),
                   const SizedBox(height: 4),
                   Text(label,
-                      style:
-                          const TextStyle(color: Colors.black87, fontSize: 15)),
+                      style: const TextStyle(
+                          color: Colors.black87, fontSize: 13)), // FIX
                 ],
               ),
             ),
@@ -392,7 +392,7 @@ class _AnalysisRow extends StatelessWidget {
                 card(
                   '\$${analysisProvider.totalEarnings}',
                   'Total earnings',
-                  fontSize: 20.0,
+                  fontSize: 22.0,
                 ),
               ],
             ),

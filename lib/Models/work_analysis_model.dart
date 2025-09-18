@@ -1,3 +1,5 @@
+// lib/Models/work_analysis_model.dart
+
 import 'dart:convert';
 
 WorkAnalysisWelcome workAnalysisWelcomeFromJson(String str) =>
@@ -18,7 +20,7 @@ class WorkAnalysisWelcome {
       WorkAnalysisWelcome(
         data: Data.fromJson(json["data"] ?? {}),
         message: json["message"] ?? "",
-        status: json["status"] ?? 0,
+        status: (json["status"] as num?)?.toInt() ?? 0, // FIX
       );
 }
 
@@ -76,7 +78,7 @@ class CardSection {
             ? []
             : List<CardDataItem>.from(
                 json["data"].map((x) => CardDataItem.fromJson(x))),
-        total: json["total"] ?? 0,
+        total: (json["total"] as num?)?.toInt() ?? 0, // FIX
       );
 }
 
@@ -94,7 +96,7 @@ class CardDataItem {
   factory CardDataItem.fromJson(Map<String, dynamic> json) => CardDataItem(
         name: json["name"] ?? "",
         color: json["color"] ?? "",
-        value: json["value"] ?? 0,
+        value: (json["value"] as num?)?.toInt() ?? 0, // FIX
       );
 }
 
@@ -113,7 +115,7 @@ class EstimatedEarnings {
             ? []
             : List<EstimatedEarningsDatum>.from(
                 json["data"].map((x) => EstimatedEarningsDatum.fromJson(x))),
-        total: json["total"] ?? 0,
+        total: (json["total"] as num?)?.toInt() ?? 0, // FIX
       );
 }
 
@@ -136,7 +138,7 @@ class EstimatedEarningsDatum {
       EstimatedEarningsDatum(
         name: json["name"] ?? "",
         color: json["color"] ?? "",
-        value: json["value"] ?? 0,
+        value: (json["value"] as num?)?.toInt() ?? 0, // FIX
         currencySymbol: json["currency_symbol"] ?? "",
         currency: json["currency"] ?? "",
       );

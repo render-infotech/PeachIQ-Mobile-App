@@ -109,13 +109,6 @@ class _AvailableShiftsState extends State<AvailableShifts> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Icon(Icons.calendar_today_outlined,
-                          //     color: Colors.grey[400], size: 48),
-                          // const SizedBox(height: 16),
-                          // Text(
-                          //   'No Available Shifts',
-                          //   style: Theme.of(context).textTheme.titleLarge,
-                          // ),
                           const SizedBox(height: 8),
                           Text(
                             'No available shifts right now.',

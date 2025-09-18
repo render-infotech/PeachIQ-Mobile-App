@@ -41,7 +41,11 @@ class CalenderWidget extends StatefulWidget {
 }
 
 class _CalenderWidgetState extends State<CalenderWidget> {
+  // MODIFIED: This now holds the FILTERED appointments for display
   late List<ShiftAppointment> _shiftAppointments = [];
+  // NEW: This holds the MASTER list of all shifts for the selected month
+  List<ScheduledShift> _masterSchedule = [];
+
   final DateTime _currentViewDate = DateTime.now();
   final CalendarController _calendarController = CalendarController();
   late DateTime _selectedMonth;
@@ -92,16 +96,17 @@ class _CalenderWidgetState extends State<CalenderWidget> {
   }
 
   Future<void> _fetchLocations() async {
+    const allLocationsOption =
+        Location(institutionId: 0, name: 'All locations');
+
     final provider = Provider.of<LocationProvider>(context, listen: false);
     await provider.fetchLocations();
-    if (mounted && provider.locations.isNotEmpty) {
+
+    if (mounted) {
+      final updatedLocations = [allLocationsOption, ...provider.locations];
       setState(() {
-        _locations = provider.locations;
-        _selectedLocation = _locations.first;
-        _isLocationsLoading = false;
-      });
-    } else if (mounted) {
-      setState(() {
+        _locations = updatedLocations;
+        _selectedLocation = allLocationsOption;
         _isLocationsLoading = false;
       });
     }
@@ -114,19 +119,44 @@ class _CalenderWidgetState extends State<CalenderWidget> {
     return '$start to $end';
   }
 
+  // MODIFIED: This method now only fetches the master list of shifts.
+  // The filtering and mapping logic has been moved to _rebuildAppointments.
   Future<void> _fetchAndSetShifts() async {
     if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
+
     final provider = Provider.of<CalenderProvider>(context, listen: false);
     await provider.fetchScheduledShifts(forDate: _selectedMonth);
+
     if (!mounted) return;
+    _masterSchedule = provider.schedules;
+    _rebuildAppointments(); // Rebuild with the new master list
+  }
+
+  // NEW: This method filters the master list and rebuilds the appointments for the UI.
+  void _rebuildAppointments() {
+    if (_selectedLocation == null) return; // Guard clause
+
+    // 1. Filter the master schedule based on the selected location
+    List<ScheduledShift> filteredShifts;
+    if (_selectedLocation!.institutionId == 0) {
+      // "All locations" is selected
+      filteredShifts = _masterSchedule;
+    } else {
+      filteredShifts = _masterSchedule.where((shift) {
+        return shift.institution == _selectedLocation!.name;
+      }).toList();
+    }
+
+    // 2. De-duplicate and map the filtered list to ShiftAppointment objects
     final uniqueShifts = <String, ScheduledShift>{};
-    for (final shift in provider.schedules) {
+    for (final shift in filteredShifts) {
       final key = shift.start.toIso8601String();
       uniqueShifts.putIfAbsent(key, () => shift);
     }
+
     final List<ShiftAppointment> newAppointments =
         uniqueShifts.values.map((shift) {
       final formattedTime = _formatTimeFromDateTime(shift.start, shift.end);
@@ -138,6 +168,8 @@ class _CalenderWidgetState extends State<CalenderWidget> {
         shiftTime: formattedTime,
       );
     }).toList();
+
+    // 3. Update the state with the newly built list of appointments
     setState(() {
       _shiftAppointments = newAppointments;
       _isLoading = false;
@@ -209,32 +241,23 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
-                        width: 4,
-                      ),
-                      const Text(
-                        'Year: ',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.black,
-                        ),
-                      ),
+                      const SizedBox(width: 4),
+                      const Text('Year: ',
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.black)),
                       DropdownButtonHideUnderline(
                         child: DropdownButton<int>(
                           value: _selectedMonth.year,
-                          dropdownColor: AppColors.white, // MODIFIED
-                          style: const TextStyle(
-                              color: AppColors.black), // MODIFIED
+                          dropdownColor: AppColors.white,
+                          style: const TextStyle(color: AppColors.black),
                           items: _yearOptions
                               .map((y) => DropdownMenuItem<int>(
                                     value: y,
-                                    child: Text(
-                                      '$y',
-                                      style: TextStyle(
-                                        color: AppColors.black,
-                                      ),
-                                    ),
+                                    child: Text('$y',
+                                        style: const TextStyle(
+                                            color: AppColors.black)),
                                   ))
                               .toList(),
                           onChanged: (int? year) {
@@ -255,27 +278,22 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        'Month: ',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.black,
-                        ),
-                      ),
+                      const Text('Month: ',
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.black)),
                       DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: _monthNames[_selectedMonth.month - 1],
-                          dropdownColor: AppColors.white, // MODIFIED
-                          style: const TextStyle(
-                              color: AppColors.black), // MODIFIED
+                          dropdownColor: AppColors.white,
+                          style: const TextStyle(color: AppColors.black),
                           items: _monthNames
                               .map((m) => DropdownMenuItem<String>(
                                     value: m,
                                     child: Text(m,
                                         style: const TextStyle(
-                                            color:
-                                                AppColors.black)), // MODIFIED
+                                            color: AppColors.black)),
                                   ))
                               .toList(),
                           onChanged: (String? value) {
@@ -296,9 +314,7 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                   ),
                 ],
               ),
-              SizedBox(
-                height: 16,
-              ),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Flexible(
@@ -332,16 +348,14 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                       ),
                     ),
                   ),
-                  // const SizedBox(width: 100),
-                  Spacer(),
+                  const Spacer(),
                   const Text('Location: ',
                       style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.black,
-                      )),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.black)),
                   if (_isLocationsLoading)
-                    SizedBox(
+                    const SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2))
@@ -349,31 +363,30 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                     DropdownButtonHideUnderline(
                       child: DropdownButton<Location>(
                         value: _selectedLocation,
-                        dropdownColor: AppColors.white, // MODIFIED
-                        style:
-                            const TextStyle(color: AppColors.black), // MODIFIED
-                        hint: Text("Select Location"),
+                        dropdownColor: AppColors.white,
+                        style: const TextStyle(color: AppColors.black),
+                        hint: const Text("Select Location"),
                         items: _locations
                             .map((loc) => DropdownMenuItem<Location>(
                                   value: loc,
                                   child: Text(loc.name,
                                       style: const TextStyle(
-                                          color: AppColors.black)), // MODIFIED
+                                          color: AppColors.black)),
                                 ))
                             .toList(),
+                        // MODIFIED: onChanged now calls _rebuildAppointments to apply the filter
                         onChanged: (Location? value) {
                           if (value == null) return;
                           setState(() {
                             _selectedLocation = value;
                           });
+                          _rebuildAppointments();
                         },
                       ),
                     ),
                 ],
               ),
-              SizedBox(
-                height: 14,
-              ),
+              const SizedBox(height: 14),
             ],
           ),
           Expanded(
@@ -389,8 +402,6 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                   child: _isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : GestureDetector(
-                          // REVISED: This GestureDetector now ONLY targets horizontal drags.
-                          // This is the most direct way to disable the horizontal swipe.
                           behavior: HitTestBehavior.opaque,
                           onHorizontalDragStart: (details) {},
                           onHorizontalDragUpdate: (details) {},
@@ -410,19 +421,17 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                             selectionDecoration: BoxDecoration(
                               color: Colors.transparent,
                               border: Border.all(
-                                color: AppColors.AppSelectedGreen,
-                                width: 1.6,
-                              ),
+                                  color: AppColors.AppSelectedGreen,
+                                  width: 1.6),
                               borderRadius: BorderRadius.circular(4),
                               shape: BoxShape.rectangle,
                             ),
                             viewHeaderStyle: ViewHeaderStyle(
                               backgroundColor: Colors.grey.shade50,
                               dayTextStyle: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black87,
-                              ),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87),
                             ),
                             monthViewSettings: const MonthViewSettings(
                               showAgenda: false,
@@ -455,10 +464,9 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                                   DateUtils.isSameDay(
                                       date, widget.selectedDate!);
 
-                              final List<ShiftAppointment> shifts = details
-                                  .appointments
-                                  .cast<ShiftAppointment>()
-                                  .toList();
+                              // MODIFIED: This now gets appointments from the already filtered list
+                              final List<ShiftAppointment> shifts =
+                                  _getShiftsFor(details.date);
                               final int total = shifts.length;
 
                               ShiftAppointment? shiftToShow;
@@ -492,9 +500,8 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     border: Border.all(
-                                      color: Colors.grey.shade300,
-                                      width: 0.3,
-                                    ),
+                                        color: Colors.grey.shade300,
+                                        width: 0.3),
                                   ),
                                   padding:
                                       const EdgeInsets.fromLTRB(1, 2, 1, 1),
@@ -514,35 +521,30 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                                                   : Colors.black87,
                                         ),
                                       ),
-                                      SizedBox(height: 16),
-                                      ...visible.map(
-                                        (s) => Container(
-                                          height: 14,
-                                          width: double.infinity,
-                                          margin:
-                                              const EdgeInsets.only(bottom: 1),
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 1,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: s.color,
-                                            borderRadius:
-                                                BorderRadius.circular(3),
-                                          ),
-                                          alignment: Alignment.centerLeft,
-                                          child: Text(
-                                            s.shiftTime,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 8,
-                                              fontWeight: FontWeight.w600,
-                                              letterSpacing: 0.1,
+                                      const SizedBox(height: 16),
+                                      ...visible.map((s) => Container(
+                                            height: 14,
+                                            width: double.infinity,
+                                            margin: const EdgeInsets.only(
+                                                bottom: 1),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 1),
+                                            decoration: BoxDecoration(
+                                                color: s.color,
+                                                borderRadius:
+                                                    BorderRadius.circular(3)),
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              s.shiftTime,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 8,
+                                                  fontWeight: FontWeight.w600,
+                                                  letterSpacing: 0.1),
                                             ),
-                                          ),
-                                        ),
-                                      ),
+                                          )),
                                       if (total > 1)
                                         GestureDetector(
                                           behavior: HitTestBehavior.opaque,
@@ -551,10 +553,9 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                                           child: Text(
                                             '+${total - 1} more',
                                             style: const TextStyle(
-                                              color: AppColors.primary,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w800,
-                                            ),
+                                                color: AppColors.primary,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800),
                                           ),
                                         ),
                                     ],
@@ -585,46 +586,39 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                     child: Material(
                       elevation: 8,
                       borderRadius: BorderRadius.circular(2),
-                      child: Builder(
-                        builder: (context) {
-                          final int _count =
-                              _getShiftsFor(_expandedDate!).length;
-                          final double headerHeight = 24;
-                          final double itemHeight = 26;
-                          final double totalContentHeight =
-                              headerHeight + (_count * itemHeight);
+                      child: Builder(builder: (context) {
+                        final int _count = _getShiftsFor(_expandedDate!).length;
+                        final double headerHeight = 24;
+                        final double itemHeight = 26;
+                        final double totalContentHeight =
+                            headerHeight + (_count * itemHeight);
+                        final double panelHeight =
+                            totalContentHeight < _expandedMaxHeight!
+                                ? totalContentHeight
+                                : _expandedMaxHeight!;
 
-                          final double panelHeight =
-                              totalContentHeight < _expandedMaxHeight!
-                                  ? totalContentHeight
-                                  : _expandedMaxHeight!;
-
-                          return ConstrainedBox(
-                            constraints: BoxConstraints(
+                        return ConstrainedBox(
+                          constraints: BoxConstraints(
                               minHeight: panelHeight,
                               maxHeight: panelHeight,
-                              minWidth: _expandedWidth!,
+                              minWidth: _expandedWidth!),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(2),
+                              border: Border.all(
+                                  color: Colors.grey.shade300, width: 1),
                             ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(2),
-                                border: Border.all(
-                                  color: Colors.grey.shade300,
-                                  width: 1,
-                                ),
-                              ),
-                              child: _DayOverlayList(
-                                date: _expandedDate!,
-                                shifts: _getShiftsFor(_expandedDate!),
-                                selected: _selectedAppointment,
-                                onSelect: _selectAppointment,
-                                onClose: _closeCellOverlay,
-                              ),
+                            child: _DayOverlayList(
+                              date: _expandedDate!,
+                              shifts: _getShiftsFor(_expandedDate!),
+                              selected: _selectedAppointment,
+                              onSelect: _selectAppointment,
+                              onClose: _closeCellOverlay,
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      }),
                     ),
                   ),
               ],
@@ -671,15 +665,12 @@ class _DayOverlayList extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           child: Align(
             alignment: Alignment.centerLeft,
-            child: Container(
-              child: Text(
-                _formatted,
-                style: const TextStyle(
+            child: Text(
+              _formatted,
+              style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
-              ),
+                  color: Colors.black87),
             ),
           ),
         ),
@@ -705,9 +696,8 @@ class _DayOverlayList extends StatelessWidget {
                         : AppColors.primary,
                     borderRadius: BorderRadius.circular(2),
                     border: Border.all(
-                      color: isSelected ? s.color : Colors.transparent,
-                      width: isSelected ? 1.4 : 1.0,
-                    ),
+                        color: isSelected ? s.color : Colors.transparent,
+                        width: isSelected ? 1.4 : 1.0),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -719,10 +709,9 @@ class _DayOverlayList extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white),
                           ),
                         ),
                       ],

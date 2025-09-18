@@ -23,21 +23,33 @@ class LocationsWelcome {
             : List<Location>.from(
                 json["data"].map((x) => Location.fromJson(x))),
         message: json["message"] ?? "",
-        status: json["status"] ?? 0,
+        status: (json["status"] as num?)?.toInt() ?? 0,
       );
 }
 
 class Location {
-  int institutionId;
-  String name;
+  final int institutionId;
+  final String name;
 
-  Location({
+  // FIX: Changed to a const constructor
+  const Location({
     required this.institutionId,
     required this.name,
   });
 
   factory Location.fromJson(Map<String, dynamic> json) => Location(
-        institutionId: json["institution_id"] ?? 0,
+        institutionId: (json["institution_id"] as num?)?.toInt() ?? 0,
         name: json["name"] ?? "Unknown Location",
       );
+
+  // Optional: Add for debugging or comparison
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Location &&
+          runtimeType == other.runtimeType &&
+          institutionId == other.institutionId;
+
+  @override
+  int get hashCode => institutionId.hashCode;
 }

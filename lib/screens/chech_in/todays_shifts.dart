@@ -150,9 +150,8 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
                                       final Color statusColor = isCheckedIn
                                           ? Color(0xFF16A34A)
                                           : Color(0xFFF97316);
-                                      final String statusText = isCheckedIn
-                                          ? 'Checked In'
-                                          : 'Pending';
+                                      final String statusText =
+                                          isCheckedIn ? 'Complete' : 'Pending';
 
                                       return ListTile(
                                         contentPadding:

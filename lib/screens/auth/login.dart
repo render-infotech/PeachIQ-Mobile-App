@@ -15,12 +15,19 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscurePassword = !_obscurePassword;
+    });
   }
 
   Future<void> _handleLogin() async {
@@ -45,7 +52,10 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Signed in successfully')),
+        const SnackBar(
+          content: Text('Signed in successfully'),
+          backgroundColor: Colors.green,
+        ),
       );
 
       // Navigate to AppShell on successful login
@@ -185,7 +195,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: _obscurePassword,
                       autofillHints: const [AutofillHints.password],
                       decoration: InputDecoration(
                         hintText: 'Enter Password',
@@ -194,6 +204,15 @@ class _LoginPageState extends State<LoginPage> {
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 18,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: Colors.white70,
+                          ),
+                          onPressed: _togglePasswordVisibility,
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),

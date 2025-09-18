@@ -63,42 +63,28 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               fit: BoxFit.cover,
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 130, vertical: 40),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Peach iQ",
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
-                    fontFamily: 'Manrope',
-                  ),
-                ),
-                Text(
-                  "INNOVATIONS",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black38,
-                    fontFamily: 'Manrope',
-                  ),
-                ),
-              ],
+          Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Container(
+              padding: const EdgeInsets.only(left: 96, right: 96, top: 150),
+              child: Image.asset(
+                AppImages.splash,
+                // height: 250,
+                // width: 250,
+                // fit: BoxFit.contain,
+              ),
             ),
           ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
               width: double.infinity,
-              height: 750,
+              height: 600,
               decoration: const BoxDecoration(
                 color: AppColors.primary,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(80),
-                  topRight: Radius.circular(80),
+                  topLeft: Radius.circular(68),
+                  topRight: Radius.circular(14),
                 ),
               ),
               child: Padding(

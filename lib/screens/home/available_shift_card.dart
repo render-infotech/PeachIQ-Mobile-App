@@ -1,5 +1,8 @@
+// lib/screens/home/available_shift_card.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:peach_iq/Providers/available_shifts_provider.dart'; // Ensure this is imported
 import 'package:peach_iq/Providers/response_provider.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/custom_pop_up.dart';
@@ -63,6 +66,13 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
       setState(() {
         _isResponding = false;
       });
+
+      // **THIS IS THE KEY LOGIC**
+      // If the API call was successful, we immediately tell the provider
+      // to remove this shift from the list. The UI will then update automatically.
+      if (success) {
+        context.read<AvailableShiftsProvider>().removeShift(widget.notifyId);
+      }
 
       messenger.showSnackBar(
         SnackBar(
@@ -182,8 +192,7 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
                                   title:
                                       'Scheduling Request from ${widget.name}',
                                   message: '''Role: ${widget.role}
-
-Dates: ${widget.dateLine} - ${widget.dateLine}
+Dates: ${widget.dateLine}
 Shift: ${widget.shiftType} (${widget.timeLine})
 Unit Area: ${widget.unitArea}''',
                                   primaryText: 'Not Interested',
