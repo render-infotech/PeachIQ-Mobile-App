@@ -1,8 +1,8 @@
 // lib/Providers/work_analysis_provider.dart
 
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:peach_iq/Models/work_analysis_model.dart';
@@ -46,7 +46,6 @@ class WorkAnalysisProvider extends ChangeNotifier {
       final token = prefs.getString('access_token');
       if (token == null || token.isEmpty) throw Exception('Token not found');
 
-      // IMPORTANT: Add this URL to your api_utils.dart file
       final uri = Uri.parse(ApiUrls.workanAlysis());
 
       final response = await http.get(uri, headers: {
@@ -56,6 +55,30 @@ class WorkAnalysisProvider extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         _analysisData = workAnalysisWelcomeFromJson(response.body);
+
+        // ==================== CHANGE START ====================
+        // Filter out future shifts to ensure data is strictly "month-to-date"
+        if (_analysisData != null && _analysisData!.data.schedules.isNotEmpty) {
+          final now = DateTime.now();
+
+          // 1. Filter the list of schedules using the new `scheduleStart` property.
+          final monthToDateSchedules =
+              _analysisData!.data.schedules.where((schedule) {
+            return !schedule.scheduleStart.isAfter(now);
+          }).toList();
+
+          // 2. Recalculate total earnings using the new `estimatedPay` property.
+          int newTotalEarnings = monthToDateSchedules.fold(0, (sum, schedule) {
+            return sum + schedule.estimatedPay;
+          });
+
+          // 3. Update the main data object with the filtered list and recalculated totals.
+          _analysisData!.data.schedules = monthToDateSchedules;
+          _analysisData!.data.cards.schedules.total =
+              monthToDateSchedules.length;
+          _analysisData!.data.cards.estimatedEarnings.total = newTotalEarnings;
+        }
+        // ===================== CHANGE END =====================
       } else {
         throw Exception('Failed to load work analysis');
       }

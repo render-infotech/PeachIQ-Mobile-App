@@ -1,5 +1,3 @@
-// lib/providers/schedules_shifts_provider.dart
-
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -14,7 +12,25 @@ class SchedulesShiftsProvider extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+
+  /// Returns the original, unfiltered list of all shifts for the fetched month.
   List<ScheduledShift> get schedules => _schedules;
+
+  /// ✨ NEW: Returns a filtered and sorted list of shifts from today onwards.
+  List<ScheduledShift> get upcomingSchedules {
+    final now = DateTime.now();
+    // Normalize 'today' to midnight to ensure we compare dates correctly.
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Filter out any shifts that started before today.
+    final filtered =
+        _schedules.where((shift) => !shift.start.isBefore(today)).toList();
+
+    // Sort the list to show the soonest shifts first.
+    filtered.sort((a, b) => a.start.compareTo(b.start));
+
+    return filtered;
+  }
 
   Future<void> fetchScheduledShifts({DateTime? forDate}) async {
     _isLoading = true;

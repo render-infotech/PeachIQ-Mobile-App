@@ -89,13 +89,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return DateFormat('MMMM d, yyyy').format(date);
   }
 
-  // --- FIX: Changed `Schedule schedule` to `dynamic schedule` ---
   String _buildTimeLine(dynamic schedule) {
     try {
-      // This will now work for both Schedule and ScheduledShift objects
-      // as long as they both have 'start' and 'end' properties.
-      final startTime = DateFormat('h:mm a').format(schedule.start);
-      final endTime = DateFormat('h:mm a').format(schedule.end);
+      // We can safely assume start and end are not null here because of our provider's filter
+      final startTime = DateFormat('h:mm a').format(schedule.start!);
+      final endTime = DateFormat('h:mm a').format(schedule.end!);
       return '$startTime - $endTime';
     } catch (e) {
       debugPrint('Error building time line: $e');
@@ -134,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       _SectionHeader(
                         title: 'Available Shifts',
-                        actionText: 'View all Available',
+                        actionText: 'View all Available Shifts',
                         onAction: () {
                           AppNavigator.pushNamed(
                               context, AppRoutes.availableShifts);
@@ -186,7 +184,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 2),
                       Consumer<SchedulesShiftsProvider>(
                         builder: (context, scheduledShiftsProvider, _) {
-                          if (scheduledShiftsProvider.schedules.isEmpty) {
+                          if (scheduledShiftsProvider
+                              .upcomingSchedules.isEmpty) {
                             return const Padding(
                                 padding: EdgeInsets.all(16.0),
                                 child: Center(
@@ -195,15 +194,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                   style: TextStyle(color: AppColors.black),
                                 )));
                           }
-                          final shiftsToShow = scheduledShiftsProvider.schedules
+                          final shiftsToShow = scheduledShiftsProvider
+                              .upcomingSchedules
                               .take(3)
                               .toList();
                           return Column(
                             children: shiftsToShow.map((schedule) {
                               return ScheduleTile(
-                                facility: schedule.institution,
-                                floorWing: schedule.unitarea,
-                                dateLine: _formatDate(schedule.start),
+                                // ✨ FIX: Provide a fallback value in case 'institution' is null
+                                facility:
+                                    schedule.institution ?? 'Facility N/A',
+                                // ✨ FIX: Provide a fallback value in case 'unitarea' is null
+                                // floorWing: schedule.unitarea ?? 'Area N/A',
+                                // We know 'start' is not null here because of the provider's filter.
+                                dateLine: _formatDate(schedule.start!),
                                 time: _buildTimeLine(schedule),
                               );
                             }).toList(),
@@ -343,8 +347,8 @@ class _AnalysisRow extends StatelessWidget {
                           color: Colors.black87)),
                   const SizedBox(height: 4),
                   Text(label,
-                      style: const TextStyle(
-                          color: Colors.black87, fontSize: 13)), // FIX
+                      style:
+                          const TextStyle(color: Colors.black87, fontSize: 13)),
                 ],
               ),
             ),
@@ -392,7 +396,7 @@ class _AnalysisRow extends StatelessWidget {
                 card(
                   '\$${analysisProvider.totalEarnings}',
                   'Total earnings',
-                  fontSize: 22.0,
+                  fontSize: 20.0,
                 ),
               ],
             ),

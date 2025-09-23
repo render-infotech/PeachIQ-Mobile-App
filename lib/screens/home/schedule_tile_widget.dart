@@ -4,7 +4,7 @@ import 'package:peach_iq/shared/themes/Appcolors.dart';
 
 class ScheduleTile extends StatelessWidget {
   final String facility;
-  final String floorWing;
+  // final String floorWing;
   final String dateLine;
   final String time;
   final bool isSelected;
@@ -13,7 +13,7 @@ class ScheduleTile extends StatelessWidget {
   const ScheduleTile({
     super.key,
     required this.facility,
-    required this.floorWing,
+    // required this.floorWing,
     required this.dateLine,
     required this.time,
     this.isSelected = false,
@@ -83,15 +83,15 @@ class ScheduleTile extends StatelessWidget {
                           color: AppColors.black,
                         ),
                       ),
-                      const SizedBox(width: 37),
-                      Text(
-                        floorWing,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                        ),
-                      ),
+                      // const SizedBox(width: 37),
+                      // Text(
+                      //   floorWing,
+                      //   overflow: TextOverflow.ellipsis,
+                      //   style: const TextStyle(
+                      //     fontSize: 16,
+                      //     color: Colors.black87,
+                      //   ),
+                      // ),
                     ],
                   ),
                   const SizedBox(height: 6),

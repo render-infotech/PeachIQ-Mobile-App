@@ -135,7 +135,7 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
                       final shift = entry.value;
                       return ScheduleTile(
                         facility: shift.institution,
-                        floorWing: shift.unitarea ?? 'N/A',
+                        // floorWing: shift.unitarea ?? 'N/A',
                         dateLine:
                             DateFormat("EEEE, MMMM d").format(shift.start),
                         time: DateFormat('h:mm a').format(shift.start),

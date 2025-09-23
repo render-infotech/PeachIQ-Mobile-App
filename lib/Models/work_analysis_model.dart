@@ -20,7 +20,7 @@ class WorkAnalysisWelcome {
       WorkAnalysisWelcome(
         data: Data.fromJson(json["data"] ?? {}),
         message: json["message"] ?? "",
-        status: (json["status"] as num?)?.toInt() ?? 0, // FIX
+        status: (json["status"] as num?)?.toInt() ?? 0,
       );
 }
 
@@ -78,7 +78,7 @@ class CardSection {
             ? []
             : List<CardDataItem>.from(
                 json["data"].map((x) => CardDataItem.fromJson(x))),
-        total: (json["total"] as num?)?.toInt() ?? 0, // FIX
+        total: (json["total"] as num?)?.toInt() ?? 0,
       );
 }
 
@@ -96,7 +96,7 @@ class CardDataItem {
   factory CardDataItem.fromJson(Map<String, dynamic> json) => CardDataItem(
         name: json["name"] ?? "",
         color: json["color"] ?? "",
-        value: (json["value"] as num?)?.toInt() ?? 0, // FIX
+        value: (json["value"] as num?)?.toInt() ?? 0,
       );
 }
 
@@ -115,7 +115,7 @@ class EstimatedEarnings {
             ? []
             : List<EstimatedEarningsDatum>.from(
                 json["data"].map((x) => EstimatedEarningsDatum.fromJson(x))),
-        total: (json["total"] as num?)?.toInt() ?? 0, // FIX
+        total: (json["total"] as num?)?.toInt() ?? 0,
       );
 }
 
@@ -138,21 +138,42 @@ class EstimatedEarningsDatum {
       EstimatedEarningsDatum(
         name: json["name"] ?? "",
         color: json["color"] ?? "",
-        value: (json["value"] as num?)?.toInt() ?? 0, // FIX
+        value: (json["value"] as num?)?.toInt() ?? 0,
         currencySymbol: json["currency_symbol"] ?? "",
         currency: json["currency"] ?? "",
       );
 }
 
+// ==================== CHANGE START ====================
 class Schedule {
   String payHours;
-  // Add other schedule fields here if you need them in the provider
+  DateTime scheduleStart; // Added for filtering
+  int estimatedPay; // Added for recalculating earnings
 
   Schedule({
     required this.payHours,
+    required this.scheduleStart,
+    required this.estimatedPay,
   });
 
-  factory Schedule.fromJson(Map<String, dynamic> json) => Schedule(
-        payHours: json["pay_hours"] ?? "0.00",
-      );
+  factory Schedule.fromJson(Map<String, dynamic> json) {
+    // Fallback date to avoid crashing if the date is missing/null in the response.
+    final fallbackDate = DateTime.fromMillisecondsSinceEpoch(0);
+
+    // Find the real date key in your JSON (e.g., "start_time", "schedule_date")
+    // and replace 'schedule_start_from_api'
+    final dateString = json['schedule_start_from_api'];
+
+    // Find the real earning key in your JSON (e.g., "earning", "pay")
+    // and replace 'estimated_pay_from_api'
+    final payValue = json['estimated_pay_from_api'];
+
+    return Schedule(
+      payHours: json["pay_hours"] ?? "0.00",
+      scheduleStart:
+          dateString != null ? DateTime.parse(dateString) : fallbackDate,
+      estimatedPay: (payValue as num?)?.toInt() ?? 0,
+    );
+  }
 }
+// ===================== CHANGE END =====================

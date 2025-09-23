@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:peach_iq/screens/auth/change_password_page.dart';
+import 'package:peach_iq/screens/profile/address_edit_widget.dart';
+import 'package:peach_iq/screens/profile/cuctom_edit_popup_widget.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
@@ -85,6 +87,138 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     _ProfileCardGroup(
                       children: [
+                        SizedBox(
+                          height: 8,
+                        ),
+                        _ProfileTile(
+                          color: Colors.black,
+                          icon: Icons.email_outlined,
+                          iconSize: 26,
+                          title: 'Email',
+                          subtitle: '123456789@gmail.com',
+                          onTap: () {
+                            showEditProfilePopup(
+                              context: context,
+                              title: 'Email',
+                              currentValue:
+                                  '123456789@gmail.com', // You can get this from a variable/state
+                              hintText: 'Enter your email address',
+                              keyboardType: TextInputType.emailAddress,
+                              onSave: (newEmail) {
+                                // Handle the save logic here
+                                print('New email: $newEmail');
+
+                                // Update your state/database/API call here
+                                // Example:
+                                // setState(() {
+                                //   userEmail = newEmail;
+                                // });
+
+                                // Show success message
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content:
+                                        Text('Email updated successfully!'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                        SizedBox(
+                          height: 8,
+                        ),
+
+                        _ProfileTile(
+                          color: const Color(0xFFFFB020),
+                          icon: CupertinoIcons.phone_fill,
+                          iconSize: 26,
+                          iconColor: Colors.black,
+                          title: 'Mobile Number',
+                          subtitle: '+1-555-555-5555',
+                          onTap: () {
+                            showEditProfilePopup(
+                              context: context,
+                              title: 'Mobile Number',
+                              currentValue: '+1-555-555-5555',
+                              hintText: 'Enter your mobile number',
+                              keyboardType: TextInputType.phone,
+                              onSave: (newMobile) {
+                                print('New mobile: $newMobile');
+
+                                // Update your state/database/API call here
+                                // Example:
+                                // setState(() {
+                                //   userMobile = newMobile;
+                                // });
+
+                                // Show success message
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'Mobile number updated successfully!'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+
+                        SizedBox(
+                          height: 8,
+                        ),
+
+                        _ProfileTile(
+                          color: const Color.fromARGB(255, 230, 231, 241),
+                          icon: CupertinoIcons.house_fill,
+                          iconSize: 26,
+                          iconColor: const Color(0xFF7C4DFF),
+                          title: 'Address',
+                          subtitle: '1234, John Street, Toronto, M1L 1V3',
+                          onTap: () {
+                            // Create current address data from your existing data
+                            final currentAddress = AddressData(
+                              country: 'CANADA',
+                              stateProvince: 'ONTARIO',
+                              city: 'AJAX',
+                              addressLine: '1234, John Street',
+                              postalCode: 'M1L 1V3',
+                              location: '', // Add if you have this data
+                              about: '', // Add if you have this data
+                            );
+
+                            showAddressEditPopup(
+                              context: context,
+                              currentAddress: currentAddress,
+                              onSave: (AddressData newAddressData) {
+                                // Handle the save logic here
+                                print(
+                                    'New address data: ${newAddressData.country}, ${newAddressData.stateProvince}');
+
+                                // Update your state/database/API call here
+                                // Example:
+                                // setState(() {
+                                //   userAddress = '${newAddressData.addressLine}, ${newAddressData.city}, ${newAddressData.postalCode}';
+                                // });
+
+                                // Show success message
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content:
+                                        Text('Address updated successfully!'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+
+                        SizedBox(
+                          height: 8,
+                        ),
                         _ProfileTile(
                           color: const Color(0xFF17C964),
                           icon: CupertinoIcons.pencil,
@@ -101,49 +235,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             );
                           },
                         ),
-
-                        SizedBox(
-                          height: 8,
-                        ),
-                        _ProfileTile(
-                          color: Colors.black,
-                          icon: Icons.email_outlined,
-                          iconSize: 26,
-                          title: 'Email',
-                          subtitle: '123456789@gmail.com',
-                          onTap: () {},
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-
-                        _ProfileTile(
-                          color: const Color(0xFFFFB020),
-                          icon: CupertinoIcons.phone_fill,
-                          iconSize: 26,
-                          iconColor: Colors.black,
-                          title: 'Mobile Number',
-                          subtitle: '+1-555-555-5555',
-                          onTap: () {},
-                        ),
-
-                        SizedBox(
-                          height: 8,
-                        ),
-
-                        _ProfileTile(
-                          color: const Color.fromARGB(255, 230, 231, 241),
-                          icon: CupertinoIcons.house_fill,
-                          iconSize: 26,
-                          iconColor: const Color(0xFF7C4DFF),
-                          title: 'Address',
-                          subtitle: '1234, John Street, Toronto, M1L 1V3',
-                          onTap: () {},
-                        ),
-
-                        SizedBox(
-                          height: 8,
-                        ),
+                        SizedBox(height: 8),
                         _ProfileTile(
                           color: const Color(0xFFFF7043),
                           icon: CupertinoIcons.doc_text_fill,

@@ -401,170 +401,158 @@ class _CalenderWidgetState extends State<CalenderWidget> {
                   ),
                   child: _isLoading
                       ? const Center(child: CircularProgressIndicator())
-                      : GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onHorizontalDragStart: (details) {},
-                          onHorizontalDragUpdate: (details) {},
-                          onHorizontalDragEnd: (details) {},
-                          child: SfCalendar(
-                            key: _calendarKey,
-                            controller: _calendarController,
-                            view: CalendarView.month,
-                            headerHeight: 0,
-                            viewHeaderHeight: 20,
-                            initialDisplayDate: _currentViewDate,
-                            allowViewNavigation: false,
-                            firstDayOfWeek: 7,
-                            backgroundColor: Colors.white,
-                            cellBorderColor: Colors.grey.shade400,
-                            todayHighlightColor: AppColors.black,
-                            selectionDecoration: BoxDecoration(
-                              color: Colors.transparent,
-                              border: Border.all(
-                                  color: AppColors.AppSelectedGreen,
-                                  width: 1.6),
-                              borderRadius: BorderRadius.circular(4),
-                              shape: BoxShape.rectangle,
-                            ),
-                            viewHeaderStyle: ViewHeaderStyle(
-                              backgroundColor: Colors.grey.shade50,
-                              dayTextStyle: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black87),
-                            ),
-                            monthViewSettings: const MonthViewSettings(
-                              showAgenda: false,
-                              appointmentDisplayMode:
-                                  MonthAppointmentDisplayMode.none,
-                              dayFormat: 'EEE',
-                              showTrailingAndLeadingDates: false,
-                            ),
-                            onTap: (CalendarTapDetails details) {
-                              if (details.date != null &&
-                                  widget.onDateSelected != null) {
-                                if (details.date!.month ==
-                                        _selectedMonth.month &&
-                                    details.date!.year == _selectedMonth.year) {
-                                  widget.onDateSelected!(details.date!);
+                      : SfCalendar(
+                          key: _calendarKey,
+                          controller: _calendarController,
+                          view: CalendarView.month,
+                          headerHeight: 0,
+                          viewHeaderHeight: 20,
+                          initialDisplayDate: _currentViewDate,
+                          allowViewNavigation: false,
+                          viewNavigationMode: ViewNavigationMode.none,
+                          firstDayOfWeek: 7,
+                          backgroundColor: Colors.white,
+                          cellBorderColor: Colors.grey.shade400,
+                          todayHighlightColor: AppColors.black,
+                          selectionDecoration: BoxDecoration(
+                            color: Colors.transparent,
+                            border: Border.all(
+                                color: AppColors.AppSelectedGreen, width: 1.6),
+                            borderRadius: BorderRadius.circular(4),
+                            shape: BoxShape.rectangle,
+                          ),
+                          viewHeaderStyle: ViewHeaderStyle(
+                            backgroundColor: Colors.grey.shade50,
+                            dayTextStyle: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87),
+                          ),
+                          monthViewSettings: const MonthViewSettings(
+                            showAgenda: false,
+                            appointmentDisplayMode:
+                                MonthAppointmentDisplayMode.none,
+                            dayFormat: 'EEE',
+                            showTrailingAndLeadingDates: false,
+                          ),
+                          onTap: (CalendarTapDetails details) {
+                            if (details.date != null &&
+                                widget.onDateSelected != null) {
+                              if (details.date!.month == _selectedMonth.month &&
+                                  details.date!.year == _selectedMonth.year) {
+                                widget.onDateSelected!(details.date!);
+                              }
+                            }
+                          },
+                          monthCellBuilder: (context, details) {
+                            final date = details.date;
+                            final isCurrentMonth =
+                                date.month == _selectedMonth.month &&
+                                    date.year == _selectedMonth.year;
+                            if (!isCurrentMonth) return const SizedBox.shrink();
+
+                            final isToday =
+                                DateUtils.isSameDay(date, DateTime.now());
+                            final isSelected = widget.selectedDate != null &&
+                                DateUtils.isSameDay(date, widget.selectedDate!);
+
+                            // MODIFIED: This now gets appointments from the already filtered list
+                            final List<ShiftAppointment> shifts =
+                                _getShiftsFor(details.date);
+                            final int total = shifts.length;
+
+                            ShiftAppointment? shiftToShow;
+                            if (shifts.isNotEmpty) {
+                              shiftToShow = shifts.first;
+                            }
+
+                            if (_selectedAppointment != null &&
+                                DateUtils.isSameDay(
+                                    _selectedAppointment!.startTime,
+                                    details.date)) {
+                              shiftToShow = _selectedAppointment;
+                            }
+
+                            final List<ShiftAppointment> visible =
+                                shiftToShow != null ? [shiftToShow] : [];
+
+                            return GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () {
+                                _calendarController.selectedDate = date;
+                                widget.onDateSelected?.call(date);
+                                if (shifts.isNotEmpty) {
+                                  widget.onAppointmentSelected
+                                      ?.call(shifts.first);
                                 }
-                              }
-                            },
-                            monthCellBuilder: (context, details) {
-                              final date = details.date;
-                              final isCurrentMonth =
-                                  date.month == _selectedMonth.month &&
-                                      date.year == _selectedMonth.year;
-                              if (!isCurrentMonth)
-                                return const SizedBox.shrink();
-
-                              final isToday =
-                                  DateUtils.isSameDay(date, DateTime.now());
-                              final isSelected = widget.selectedDate != null &&
-                                  DateUtils.isSameDay(
-                                      date, widget.selectedDate!);
-
-                              // MODIFIED: This now gets appointments from the already filtered list
-                              final List<ShiftAppointment> shifts =
-                                  _getShiftsFor(details.date);
-                              final int total = shifts.length;
-
-                              ShiftAppointment? shiftToShow;
-                              if (shifts.isNotEmpty) {
-                                shiftToShow = shifts.first;
-                              }
-
-                              if (_selectedAppointment != null &&
-                                  DateUtils.isSameDay(
-                                      _selectedAppointment!.startTime,
-                                      details.date)) {
-                                shiftToShow = _selectedAppointment;
-                              }
-
-                              final List<ShiftAppointment> visible =
-                                  shiftToShow != null ? [shiftToShow] : [];
-
-                              return GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: () {
-                                  _calendarController.selectedDate = date;
-                                  widget.onDateSelected?.call(date);
-                                  if (shifts.isNotEmpty) {
-                                    widget.onAppointmentSelected
-                                        ?.call(shifts.first);
-                                  }
-                                  _closeCellOverlay();
-                                  setState(() {});
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    border: Border.all(
-                                        color: Colors.grey.shade300,
-                                        width: 0.3),
-                                  ),
-                                  padding:
-                                      const EdgeInsets.fromLTRB(1, 2, 1, 1),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '${date.day}',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                          color: isToday
-                                              ? AppColors.primary
-                                              : isSelected
-                                                  ? AppColors.AppSelectedGreen
-                                                  : Colors.black87,
+                                _closeCellOverlay();
+                                setState(() {});
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(
+                                      color: Colors.grey.shade300, width: 0.3),
+                                ),
+                                padding: const EdgeInsets.fromLTRB(1, 2, 1, 1),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${date.day}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: isToday
+                                            ? AppColors.primary
+                                            : isSelected
+                                                ? AppColors.AppSelectedGreen
+                                                : Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ...visible.map((s) => Container(
+                                          height: 14,
+                                          width: double.infinity,
+                                          margin:
+                                              const EdgeInsets.only(bottom: 1),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 1),
+                                          decoration: BoxDecoration(
+                                              color: s.color,
+                                              borderRadius:
+                                                  BorderRadius.circular(3)),
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            s.shiftTime,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.w600,
+                                                letterSpacing: 0.1),
+                                          ),
+                                        )),
+                                    if (total > 1)
+                                      GestureDetector(
+                                        behavior: HitTestBehavior.opaque,
+                                        onTap: () => _openCellOverlay(
+                                            date, details.bounds),
+                                        child: Text(
+                                          '+${total - 1} more',
+                                          style: const TextStyle(
+                                              color: AppColors.primary,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w800),
                                         ),
                                       ),
-                                      const SizedBox(height: 16),
-                                      ...visible.map((s) => Container(
-                                            height: 14,
-                                            width: double.infinity,
-                                            margin: const EdgeInsets.only(
-                                                bottom: 1),
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 1),
-                                            decoration: BoxDecoration(
-                                                color: s.color,
-                                                borderRadius:
-                                                    BorderRadius.circular(3)),
-                                            alignment: Alignment.centerLeft,
-                                            child: Text(
-                                              s.shiftTime,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 8,
-                                                  fontWeight: FontWeight.w600,
-                                                  letterSpacing: 0.1),
-                                            ),
-                                          )),
-                                      if (total > 1)
-                                        GestureDetector(
-                                          behavior: HitTestBehavior.opaque,
-                                          onTap: () => _openCellOverlay(
-                                              date, details.bounds),
-                                          child: Text(
-                                            '+${total - 1} more',
-                                            style: const TextStyle(
-                                                color: AppColors.primary,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w800),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
+                                  ],
                                 ),
-                              );
-                            },
-                            dataSource: ShiftDataSource(_shiftAppointments),
-                          ),
+                              ),
+                            );
+                          },
+                          dataSource: ShiftDataSource(_shiftAppointments),
                         ),
                 ),
                 if (_expandedDate != null)
