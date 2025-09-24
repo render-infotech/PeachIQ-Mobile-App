@@ -112,10 +112,12 @@ class _CalenderWidgetState extends State<CalenderWidget> {
     }
   }
 
+  // MODIFIED: Corrected the DateFormat to include minutes.
   String _formatTimeFromDateTime(DateTime startTime, DateTime endTime) {
+    // The format 'h:mm a' ensures minutes are included (e.g., "10:30AM").
     final String start =
-        DateFormat('h a').format(startTime).replaceAll(' ', '');
-    final String end = DateFormat('h a').format(endTime).replaceAll(' ', '');
+        DateFormat('h:mm a').format(startTime).replaceAll(' ', '');
+    final String end = DateFormat('h:mm a').format(endTime).replaceAll(' ', '');
     return '$start to $end';
   }
 

@@ -1,3 +1,5 @@
+// lib/screens/home/scheduled_shifts_page.dart
+
 import 'dart:ui' show FontFeature;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +32,6 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
     });
   }
 
-  // ADDED: Method to show the new details popup
   void _showShiftDetailsPopup(BuildContext context, ScheduledShift shift) {
     showModalBottomSheet(
       context: context,
@@ -99,6 +100,15 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
             Expanded(
               child: Consumer<SchedulesShiftsProvider>(
                 builder: (context, provider, child) {
+                  // ==================== CHANGE START ====================
+                  // Use the sorted `upcomingSchedules` list here.
+                  final shiftsToDisplay = provider.upcomingSchedules;
+                  // ===================== CHANGE END =====================
+
+                  if (provider.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
                   if (provider.errorMessage != null) {
                     return Center(
                       child: Column(
@@ -115,7 +125,11 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
                       ),
                     );
                   }
-                  if (provider.schedules.isEmpty) {
+
+                  // ==================== CHANGE START ====================
+                  // Check the new sorted list for emptiness.
+                  if (shiftsToDisplay.isEmpty) {
+                    // ===================== CHANGE END =====================
                     return const Center(
                       child: Text(
                         'You have no upcoming shifts.',
@@ -123,29 +137,29 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
                       ),
                     );
                   }
-                  if (selectedShiftIndex >= provider.schedules.length) {
+
+                  if (selectedShiftIndex >= shiftsToDisplay.length) {
                     selectedShiftIndex = 0;
                   }
 
-                  // CHANGED: The main view is now just the list of tiles.
                   return ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    children: provider.schedules.asMap().entries.map((entry) {
+                    // ==================== CHANGE START ====================
+                    // Build the list using the sorted `shiftsToDisplay`.
+                    children: shiftsToDisplay.asMap().entries.map((entry) {
+                      // ===================== CHANGE END =====================
                       final index = entry.key;
                       final shift = entry.value;
                       return ScheduleTile(
                         facility: shift.institution,
-                        // floorWing: shift.unitarea ?? 'N/A',
                         dateLine:
                             DateFormat("EEEE, MMMM d").format(shift.start),
                         time: DateFormat('h:mm a').format(shift.start),
                         isSelected: index == selectedShiftIndex,
                         onTap: () {
-                          // Preserves the tile selection highlight
                           setState(() {
                             selectedShiftIndex = index;
                           });
-                          // Shows the new popup with the details
                           _showShiftDetailsPopup(context, shift);
                         },
                       );
@@ -161,13 +175,11 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
   }
 }
 
-// ADDED: New private widget to build the content of the modal bottom sheet.
 class _ShiftDetailsSheet extends StatelessWidget {
   final ScheduledShift shift;
 
   const _ShiftDetailsSheet({required this.shift});
 
-  // Helper method to get day suffix (st, nd, rd, th)
   String _getDaySuffix(int day) {
     if (day >= 11 && day <= 13) return 'th';
     switch (day % 10) {
@@ -263,7 +275,6 @@ class _ShiftDetailsSheet extends StatelessWidget {
               ),
             ),
           ),
-          // Title
           const Text(
             'Shift Details',
             style: TextStyle(

@@ -59,59 +59,30 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
       status: status,
     );
 
-    // ==================== CHANGE START ====================
     if (mounted) {
       setState(() {
         _isResponding = false;
       });
 
+      // **THIS IS THE KEY LOGIC**
+      // If the API call was successful, we immediately tell the provider
+      // to remove this shift from the list. The UI will then update automatically.
       if (success) {
-        // Optimistically remove the shift from the list on any successful response.
         context.read<AvailableShiftsProvider>().removeShift(widget.notifyId);
-
-        // If the user expressed interest, show the new confirmation dialog.
-        if (status == 1) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Thank You'),
-              content: const Text(
-                'Thank you for your interest. Shifts are assigned on a first-come, first-serve basis. We will notify you once your shift has been assigned.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          );
-        } else {
-          // For other successful actions (e.g., 'Not Interested'), show a simple SnackBar.
-          messenger.showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Your response has been recorded.',
-                style: TextStyle(color: AppColors.white),
-              ),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } else {
-        // If the API call failed, show an error message.
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(
-              responseProvider.errorMessage ?? 'An unknown error occurred.',
-              style: const TextStyle(color: AppColors.white),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
       }
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'Caregiver status updated successfully'
+                : responseProvider.errorMessage ?? 'An unknown error occurred.',
+            style: const TextStyle(color: AppColors.white),
+          ),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
     }
-    // ===================== CHANGE END =====================
   }
 
   @override

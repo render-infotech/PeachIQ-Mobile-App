@@ -106,7 +106,6 @@ class AvailableShift {
         displayTimeshift: json["display_timeshift"] ?? "N/A",
         displayWorkshift: json["display_workshift"] ?? "N/A",
         category: Category.fromJson(json["category"] ?? {}),
-        // Handle the case where unitarea can be null
         unitarea: json["unitarea"] == null
             ? null
             : UnitArea.fromJson(json["unitarea"]),

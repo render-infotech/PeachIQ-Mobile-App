@@ -75,12 +75,17 @@ class ScheduleTile extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        facility,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 18,
-                          color: AppColors.black,
+                      // Wrapped with Expanded and added overflow handling
+                      Expanded(
+                        child: Text(
+                          facility,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 18,
+                            color: AppColors.black,
+                          ),
                         ),
                       ),
                       // const SizedBox(width: 37),
@@ -101,16 +106,22 @@ class ScheduleTile extends StatelessWidget {
                         child: split.$2.isEmpty
                             ? Text(
                                 dateLine,
+                                // Added overflow handling
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.black87,
                                 ),
                               )
                             : RichText(
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 text: TextSpan(
                                   style: const TextStyle(
                                     fontSize: 16,
                                     color: Colors.black87,
+                                    fontFamily: 'Roboto',
                                   ),
                                   children: [
                                     TextSpan(text: split.$1),

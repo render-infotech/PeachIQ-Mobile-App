@@ -17,14 +17,11 @@ class WorkAnalysisProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   WorkAnalysisWelcome? get analysisData => _analysisData;
 
-  // Getter for Total Shifts
   int get totalShifts => _analysisData?.data.cards.schedules.total ?? 0;
 
-  // Getter for Total Earnings
   int get totalEarnings =>
       _analysisData?.data.cards.estimatedEarnings.total ?? 0;
 
-  // Calculated Getter for Total Hours
   double get totalHours {
     if (_analysisData == null || _analysisData!.data.schedules.isEmpty) {
       return 0.0;
@@ -56,7 +53,6 @@ class WorkAnalysisProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         _analysisData = workAnalysisWelcomeFromJson(response.body);
 
-        // ==================== CHANGE START ====================
         // Filter out future shifts to ensure data is strictly "month-to-date"
         if (_analysisData != null && _analysisData!.data.schedules.isNotEmpty) {
           final now = DateTime.now();
@@ -78,7 +74,6 @@ class WorkAnalysisProvider extends ChangeNotifier {
               monthToDateSchedules.length;
           _analysisData!.data.cards.estimatedEarnings.total = newTotalEarnings;
         }
-        // ===================== CHANGE END =====================
       } else {
         throw Exception('Failed to load work analysis');
       }

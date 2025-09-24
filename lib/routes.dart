@@ -19,7 +19,6 @@ import 'package:peach_iq/screens/chech_in/todays_shifts.dart';
 import 'package:peach_iq/widgets/bottom_nav.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/splash.dart';
-
 import 'package:provider/provider.dart';
 
 class AppRoutes {
@@ -37,8 +36,7 @@ class AppRoutes {
   static const String generalSettings = '/general-settings';
   static const String todaysShifts = '/todays-shifts';
   static const String checkIn = '/check-in';
-  static const String changePassword =
-      '/change-password'; // <<< 2. ADD THIS ROUTE CONSTANT
+  static const String changePassword = '/change-password';
 }
 
 class AppShell extends StatefulWidget {
@@ -76,7 +74,7 @@ class _AppShellState extends State<AppShell> {
     final loadingProvider =
         Provider.of<LoadingProvider>(context, listen: false);
     loadingProvider.setLoading(true);
-    Future.delayed(const Duration(milliseconds: 50), () {
+    Future.delayed(const Duration(milliseconds: 20), () {
       final route = _indexToRoute[index]!;
       Navigator.pushReplacementNamed(context, route);
     });
@@ -108,8 +106,6 @@ class _AppShellState extends State<AppShell> {
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
-      // ... (all other cases remain the same)
-
       case AppRoutes.splash:
         return MaterialPageRoute(
           builder: (_) => const SplashScreen(),
@@ -178,13 +174,11 @@ class AppRouter {
           builder: (_) =>
               const AppShell(initialIndex: 4, child: ProfileScreen()),
         );
-
       case AppRoutes.changePassword:
         return MaterialPageRoute(
           builder: (_) =>
               const AppShell(initialIndex: 4, child: ChangePasswordScreen()),
         );
-
       default:
         return MaterialPageRoute(
           builder: (_) => const AppShell(initialIndex: 0),

@@ -174,8 +174,7 @@ class AvailableShiftsProvider extends ChangeNotifier {
       }).timeout(const Duration(seconds: 10));
 
       debugPrint('API connectivity test - Status: ${response.statusCode}');
-      return response.statusCode <
-          500; // Any status < 500 means API is reachable
+      return response.statusCode < 500;
     } catch (e) {
       debugPrint('API connectivity test failed: $e');
       return false;
