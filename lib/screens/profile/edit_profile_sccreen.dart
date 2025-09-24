@@ -58,11 +58,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           children: [
             Consumer<ProfileProvider>(
-              builder: (context, p, _) => HeaderCard(
-                name: p.fullName,
-                subtitle: p.email.isNotEmpty ? p.email : null,
-                pageheader: 'Edit profile',
-                onSignOut: () => _handleSignOut(context),
+              builder: (context, p, _) => Stack(
+                children: [
+                  HeaderCard(
+                    name: p.fullName,
+                    subtitle: p.email.isNotEmpty ? p.email : null,
+                    pageheader: '       Edit profile',
+                    onSignOut: () => _handleSignOut(context),
+                  ),
+                  Positioned(
+                    left: 4,
+                    bottom: 3,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
+                            color: AppColors.white,
+                            size: 22,
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -108,12 +129,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 // Handle the save logic here
                                 print('New email: $newEmail');
 
-                                // Update your state/database/API call here
-                                // Example:
-                                // setState(() {
-                                //   userEmail = newEmail;
-                                // });
-
                                 // Show success message
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -146,12 +161,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               keyboardType: TextInputType.phone,
                               onSave: (newMobile) {
                                 print('New mobile: $newMobile');
-
-                                // Update your state/database/API call here
-                                // Example:
-                                // setState(() {
-                                //   userMobile = newMobile;
-                                // });
 
                                 // Show success message
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -196,12 +205,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 // Handle the save logic here
                                 print(
                                     'New address data: ${newAddressData.country}, ${newAddressData.stateProvince}');
-
-                                // Update your state/database/API call here
-                                // Example:
-                                // setState(() {
-                                //   userAddress = '${newAddressData.addressLine}, ${newAddressData.city}, ${newAddressData.postalCode}';
-                                // });
 
                                 // Show success message
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -347,8 +350,8 @@ class _ProfileTile extends StatelessWidget {
                   Text(
                     title ?? 'Title',
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
                       color: Color(0xFF2C2C2C),
                       fontFamily: 'Manrope',
                     ),
@@ -358,9 +361,9 @@ class _ProfileTile extends StatelessWidget {
                     Text(
                       subtitle!,
                       style: const TextStyle(
-                        fontSize: 14.5,
+                        fontSize: 12.5,
                         color: AppColors.black,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w500,
                         fontFamily: 'Manrope',
                       ),
                       maxLines: 2,

@@ -10,23 +10,76 @@ class AvailableShiftsProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   List<AvailableShift> _schedules = [];
+  Timer? _refreshTimer;
+  bool _autoRefreshEnabled = false;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   List<AvailableShift> get schedules => _schedules;
   bool get hasSchedules => _schedules.isNotEmpty;
+  bool get autoRefreshEnabled => _autoRefreshEnabled;
 
   void clear() {
     _schedules = [];
     _errorMessage = null;
     _isLoading = false;
+    stopAutoRefresh();
     notifyListeners();
   }
 
-  Future<void> fetchAvailableShifts() async {
-    _isLoading = true;
-    _errorMessage = null;
+  /// Start auto-refresh with specified interval (default: 30 seconds)
+  void startAutoRefresh({Duration interval = const Duration(seconds: 30)}) {
+    if (_autoRefreshEnabled) return; // Already running
+
+    _autoRefreshEnabled = true;
+    _refreshTimer?.cancel();
+
+    debugPrint('Starting auto-refresh with ${interval.inSeconds}s interval');
+
+    _refreshTimer = Timer.periodic(interval, (timer) {
+      if (_autoRefreshEnabled && !_isLoading) {
+        debugPrint('Auto-refreshing available shifts...');
+        fetchAvailableShifts(isAutoRefresh: true);
+      }
+    });
+
     notifyListeners();
+  }
+
+  /// Stop auto-refresh
+  void stopAutoRefresh() {
+    if (!_autoRefreshEnabled) return; // Already stopped
+
+    _autoRefreshEnabled = false;
+    _refreshTimer?.cancel();
+    _refreshTimer = null;
+
+    debugPrint('Stopped auto-refresh');
+    notifyListeners();
+  }
+
+  /// Toggle auto-refresh on/off
+  void toggleAutoRefresh({Duration interval = const Duration(seconds: 30)}) {
+    if (_autoRefreshEnabled) {
+      stopAutoRefresh();
+    } else {
+      startAutoRefresh(interval: interval);
+    }
+  }
+
+  @override
+  void dispose() {
+    stopAutoRefresh();
+    super.dispose();
+  }
+
+  Future<void> fetchAvailableShifts({bool isAutoRefresh = false}) async {
+    // Don't show loading indicator for auto-refresh to avoid UI flickering
+    if (!isAutoRefresh) {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+    }
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -60,9 +113,9 @@ class AvailableShiftsProvider extends ChangeNotifier {
               availableShiftsResponseFromJson(response.body);
           _schedules = availableShiftsResponse.data;
           debugPrint(
-              'Successfully parsed ${_schedules.length} available shifts');
+              'Successfully parsed ${_schedules.length} available shifts${isAutoRefresh ? ' (auto-refresh)' : ''}');
 
-          _isLoading = false;
+          if (!isAutoRefresh) _isLoading = false;
           notifyListeners();
         } catch (parseError) {
           debugPrint('Error parsing available shifts response: $parseError');
@@ -91,8 +144,9 @@ class AvailableShiftsProvider extends ChangeNotifier {
                 .map((scheduleData) => AvailableShift.fromJson(scheduleData))
                 .toList();
 
-            debugPrint('Fallback parsing found ${_schedules.length} schedules');
-            _isLoading = false;
+            debugPrint(
+                'Fallback parsing found ${_schedules.length} schedules${isAutoRefresh ? ' (auto-refresh)' : ''}');
+            if (!isAutoRefresh) _isLoading = false;
             notifyListeners();
           } catch (fallbackError) {
             debugPrint('Fallback parsing also failed: $fallbackError');
@@ -140,14 +194,26 @@ class AvailableShiftsProvider extends ChangeNotifier {
         _errorMessage = e.toString().replaceFirst('Exception: ', '');
       }
     } finally {
-      _isLoading = false;
+      if (!isAutoRefresh) _isLoading = false;
       notifyListeners();
     }
   }
 
   void removeShift(int notifyId) {
+    final removedCount = _schedules.length;
     _schedules.removeWhere((schedule) => schedule.notifyId == notifyId);
-    notifyListeners();
+    final currentCount = _schedules.length;
+
+    if (removedCount != currentCount) {
+      debugPrint('Removed shift with notifyId: $notifyId');
+      notifyListeners();
+    }
+  }
+
+  /// Refresh shifts immediately after an action (like accepting/rejecting a shift)
+  Future<void> refreshAfterAction() async {
+    debugPrint('Refreshing shifts after user action...');
+    await fetchAvailableShifts();
   }
 
   Future<void> retry() async {

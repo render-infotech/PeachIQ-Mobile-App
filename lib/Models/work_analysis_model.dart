@@ -144,11 +144,10 @@ class EstimatedEarningsDatum {
       );
 }
 
-// ==================== CHANGE START ====================
 class Schedule {
   String payHours;
-  DateTime scheduleStart; // Added for filtering
-  int estimatedPay; // Added for recalculating earnings
+  DateTime scheduleStart;
+  int estimatedPay;
 
   Schedule({
     required this.payHours,
@@ -157,15 +156,10 @@ class Schedule {
   });
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
-    // Fallback date to avoid crashing if the date is missing/null in the response.
     final fallbackDate = DateTime.fromMillisecondsSinceEpoch(0);
 
-    // Find the real date key in your JSON (e.g., "start_time", "schedule_date")
-    // and replace 'schedule_start_from_api'
     final dateString = json['schedule_start_from_api'];
 
-    // Find the real earning key in your JSON (e.g., "earning", "pay")
-    // and replace 'estimated_pay_from_api'
     final payValue = json['estimated_pay_from_api'];
 
     return Schedule(
@@ -176,4 +170,3 @@ class Schedule {
     );
   }
 }
-// ===================== CHANGE END =====================

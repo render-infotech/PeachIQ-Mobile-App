@@ -18,9 +18,20 @@ class _AvailableShiftsState extends State<AvailableShifts> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AvailableShiftsProvider>(context, listen: false)
-          .fetchAvailableShifts();
+      final shiftsProvider =
+          Provider.of<AvailableShiftsProvider>(context, listen: false);
+      shiftsProvider.fetchAvailableShifts();
+      // Start auto-refresh when the screen loads
+      shiftsProvider.startAutoRefresh();
     });
+  }
+
+  @override
+  void dispose() {
+    // Stop auto-refresh when leaving the screen
+    Provider.of<AvailableShiftsProvider>(context, listen: false)
+        .stopAutoRefresh();
+    super.dispose();
   }
 
   void _handleSignOut(BuildContext context) {
@@ -72,6 +83,81 @@ class _AvailableShiftsState extends State<AvailableShifts> {
                 onSignOut: () => _handleSignOut(context),
               ),
             ),
+            // Auto-refresh indicator
+            Consumer<AvailableShiftsProvider>(
+              builder: (context, shiftsProvider, _) {
+                if (shiftsProvider.autoRefreshEnabled) {
+                  return Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    // child: Row(
+                    //   children: [
+                    //     Icon(
+                    //       Icons.refresh,
+                    //       size: 16,
+                    //       color: Colors.green[600],
+                    //     ),
+                    //     const SizedBox(width: 4),
+                    //     Text(
+                    //       'Auto-refresh enabled',
+                    //       style: TextStyle(
+                    //         fontSize: 12,
+                    //         color: Colors.green[600],
+                    //         fontWeight: FontWeight.w500,
+                    //       ),
+                    //     ),
+                    //     const Spacer(),
+                    //     GestureDetector(
+                    //       onTap: () => shiftsProvider.toggleAutoRefresh(),
+                    //       child: Text(
+                    //         'Turn off',
+                    //         style: TextStyle(
+                    //           fontSize: 12,
+                    //           color: Colors.grey[600],
+                    //           decoration: TextDecoration.underline,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
+                  );
+                } else {
+                  return Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.refresh_outlined,
+                          size: 16,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Auto-refresh disabled',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () => shiftsProvider.toggleAutoRefresh(),
+                          child: Text(
+                            'Turn on',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue[600],
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              },
+            ),
             const SizedBox(height: 10),
             Expanded(
               child: Consumer<AvailableShiftsProvider>(
@@ -120,21 +206,24 @@ class _AvailableShiftsState extends State<AvailableShifts> {
                     );
                   }
 
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemCount: shiftsProvider.schedules.length,
-                    itemBuilder: (context, index) {
-                      final schedule = shiftsProvider.schedules[index];
-                      return AvailableShiftCard(
-                        name: schedule.name,
-                        dateLine: schedule.dateLine,
-                        timeLine: schedule.timeLine,
-                        notifyId: schedule.notifyId,
-                        role: schedule.role,
-                        shiftType: schedule.shiftType,
-                        unitArea: schedule.unitArea,
-                      );
-                    },
+                  return RefreshIndicator(
+                    onRefresh: () => shiftsProvider.fetchAvailableShifts(),
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      itemCount: shiftsProvider.schedules.length,
+                      itemBuilder: (context, index) {
+                        final schedule = shiftsProvider.schedules[index];
+                        return AvailableShiftCard(
+                          name: schedule.name,
+                          dateLine: schedule.dateLine,
+                          timeLine: schedule.timeLine,
+                          notifyId: schedule.notifyId,
+                          role: schedule.role,
+                          shiftType: schedule.shiftType,
+                          unitArea: schedule.unitArea,
+                        );
+                      },
+                    ),
                   );
                 },
               ),

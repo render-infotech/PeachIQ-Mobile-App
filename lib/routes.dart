@@ -75,8 +75,10 @@ class _AppShellState extends State<AppShell> {
         Provider.of<LoadingProvider>(context, listen: false);
     loadingProvider.setLoading(true);
     Future.delayed(const Duration(milliseconds: 20), () {
-      final route = _indexToRoute[index]!;
-      Navigator.pushReplacementNamed(context, route);
+      if (mounted) {
+        final route = _indexToRoute[index]!;
+        Navigator.pushReplacementNamed(context, route);
+      }
     });
   }
 

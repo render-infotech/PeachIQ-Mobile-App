@@ -31,6 +31,7 @@ class AvailableShiftCard extends StatefulWidget {
 
 class _AvailableShiftCardState extends State<AvailableShiftCard> {
   bool _isResponding = false;
+  bool _isPending = false;
 
   (String prefix, String suffix, String postfix) _splitOrdinal(String input) {
     final parts = input.split(' ');
@@ -46,6 +47,108 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
     return ('$before $day', suf, ' $after');
   }
 
+  void _showInterestConfirmation() {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          backgroundColor: AppColors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 240, maxWidth: 320),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Success icon
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.AppSelectedGreen.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle,
+                      color: AppColors.AppSelectedGreen,
+                      size: 30,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Title
+                  const Text(
+                    'Interest Confirmed!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.black,
+                      fontFamily: 'Manrope',
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Message
+                  const Text(
+                    'Thank you for your interest. Shifts are assigned on a first-come, first-serve basis. We will notify you once your shift has been assigned.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.4,
+                      color: Colors.black87,
+                      fontFamily: 'Manrope',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // OK Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(dialogContext).pop();
+                        if (mounted) {
+                          _respondToShift(
+                              1); // Proceed with accepting the shift
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.AppSelectedGreen,
+                        foregroundColor: AppColors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Got it!',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Manrope',
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _respondToShift(int status) async {
     setState(() {
       _isResponding = true;
@@ -53,33 +156,35 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
 
     final messenger = ScaffoldMessenger.of(context);
     final responseProvider = context.read<ShiftResponseProvider>();
+    final shiftsProvider = context.read<AvailableShiftsProvider>();
 
     final success = await responseProvider.respondToShift(
       notifyId: widget.notifyId,
       status: status,
+      shiftsProvider:
+          shiftsProvider, // Pass the shifts provider for immediate updates
     );
 
     if (mounted) {
       setState(() {
         _isResponding = false;
+        if (success && status == 1) {
+          _isPending = true; // Show Pending after successful Interested
+        }
       });
-
-      // **THIS IS THE KEY LOGIC**
-      // If the API call was successful, we immediately tell the provider
-      // to remove this shift from the list. The UI will then update automatically.
-      if (success) {
-        context.read<AvailableShiftsProvider>().removeShift(widget.notifyId);
-      }
 
       messenger.showSnackBar(
         SnackBar(
           content: Text(
             success
-                ? 'Caregiver status updated successfully'
+                ? (status == 1
+                    ? 'Your interest has been submitted successfully!'
+                    : 'Shift declined successfully! The shift has been removed from available shifts.')
                 : responseProvider.errorMessage ?? 'An unknown error occurred.',
             style: const TextStyle(color: AppColors.white),
           ),
           backgroundColor: success ? Colors.green : Colors.red,
+          duration: const Duration(seconds: 4),
         ),
       );
     }
@@ -97,7 +202,7 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -184,7 +289,7 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: GestureDetector(
-                        onTap: _isResponding
+                        onTap: _isResponding || _isPending
                             ? null
                             : () {
                                 showAppPopup(
@@ -203,7 +308,7 @@ Unit Area: ${widget.unitArea}''',
                                   secondaryText: 'Interested',
                                   onSecondary: () {
                                     Navigator.of(context).pop();
-                                    _respondToShift(1);
+                                    _showInterestConfirmation();
                                   },
                                 );
                               },
@@ -213,9 +318,9 @@ Unit Area: ${widget.unitArea}''',
                                 height: 12,
                                 child: CircularProgressIndicator(
                                     strokeWidth: 2, color: Colors.white))
-                            : const Text(
-                                'Respond',
-                                style: TextStyle(
+                            : Text(
+                                _isPending ? 'Pending' : 'Respond',
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
