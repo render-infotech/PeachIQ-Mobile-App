@@ -1,6 +1,4 @@
 // lib/Providers/work_analysis_provider.dart
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,17 +14,29 @@ class WorkAnalysisProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   WorkAnalysisWelcome? get analysisData => _analysisData;
 
-  int get totalShifts => _analysisData?.data.cards.schedules.total ?? 0;
+  // <<< 1. UPDATE GETTER TO USE MTD VALUE
+  int get totalShifts => _analysisData?.data.cards.mtdSchedules.total ?? 0;
 
-  int get totalEarnings =>
-      _analysisData?.data.cards.estimatedEarnings.total ?? 0;
+  // <<< 2. UPDATE GETTER TO USE MTD VALUE
+  double get totalEarnings =>
+      _analysisData?.data.cards.mtdEstimatedEarnings.total ?? 0.0;
 
+  // No change to totalHours as MTD hours aren't provided directly in the 'cards' object.
+  // This continues to be calculated from the main schedules list.
   double get totalHours {
     if (_analysisData == null || _analysisData!.data.schedules.isEmpty) {
       return 0.0;
     }
     double total = 0.0;
-    for (var schedule in _analysisData!.data.schedules) {
+    final now = DateTime.now();
+
+    // Filter for past/current schedules before summing hours
+    final monthToDateSchedules =
+        _analysisData!.data.schedules.where((schedule) {
+      return !schedule.scheduleStart.isAfter(now);
+    }).toList();
+
+    for (var schedule in monthToDateSchedules) {
       total += double.tryParse(schedule.payHours) ?? 0.0;
     }
     return total;
@@ -52,27 +62,9 @@ class WorkAnalysisProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         _analysisData = workAnalysisWelcomeFromJson(response.body);
 
-        // Filter out future shifts to ensure data is strictly "month-to-date"
-        if (_analysisData != null && _analysisData!.data.schedules.isNotEmpty) {
-          final now = DateTime.now();
-
-          // 1. Filter the list of schedules using the new `scheduleStart` property.
-          final monthToDateSchedules =
-              _analysisData!.data.schedules.where((schedule) {
-            return !schedule.scheduleStart.isAfter(now);
-          }).toList();
-
-          // 2. Recalculate total earnings using the new `estimatedPay` property.
-          int newTotalEarnings = monthToDateSchedules.fold(0, (sum, schedule) {
-            return sum + schedule.estimatedPay;
-          });
-
-          // 3. Update the main data object with the filtered list and recalculated totals.
-          _analysisData!.data.schedules = monthToDateSchedules;
-          _analysisData!.data.cards.schedules.total =
-              monthToDateSchedules.length;
-          _analysisData!.data.cards.estimatedEarnings.total = newTotalEarnings;
-        }
+        // <<< 3. REMOVE OLD MANUAL MTD CALCULATION BLOCK
+        // The manual filtering and recalculation logic is no longer needed
+        // as the API now provides the correct MTD totals directly.
       } else {
         throw Exception('Failed to load work analysis');
       }

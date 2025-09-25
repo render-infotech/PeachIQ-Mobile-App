@@ -187,6 +187,7 @@ class _AddressEditPopupState extends State<AddressEditPopup> {
           controller: controller,
           keyboardType: keyboardType,
           maxLines: maxLines,
+          style: TextStyle(color: AppColors.black),
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: TextStyle(

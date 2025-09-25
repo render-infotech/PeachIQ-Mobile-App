@@ -1,4 +1,3 @@
-// edit_profile_popup.dart
 import 'package:flutter/material.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 
@@ -55,7 +54,6 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -63,7 +61,6 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                     'Edit ${widget.title}',
                     style: TextStyle(
                       fontSize: 18,
-                      // fontWeight: FontWeight.bold,
                       color: AppColors.black,
                     ),
                   ),
@@ -79,15 +76,15 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
               ),
               const SizedBox(height: 16),
 
-              // Input Field
               TextFormField(
                 controller: _controller,
                 keyboardType: widget.keyboardType ?? TextInputType.text,
                 maxLines: widget.maxLines,
+                style: TextStyle(color: AppColors.black),
                 decoration: InputDecoration(
                   labelText: widget.title,
                   hintText: widget.hintText,
-                  labelStyle: TextStyle(color: AppColors.primary),
+                  labelStyle: TextStyle(color: AppColors.black),
                   hintStyle: TextStyle(color: AppColors.black.withOpacity(0.5)),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -120,7 +117,6 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                     }
                   }
 
-                  // Mobile number validation (basic)
                   if (widget.title.toLowerCase().contains('mobile') ||
                       widget.title.toLowerCase().contains('phone')) {
                     if (value.length < 10) {

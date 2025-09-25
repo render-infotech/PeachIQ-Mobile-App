@@ -10,12 +10,16 @@ import 'package:peach_iq/screens/auth/login.dart';
 import 'package:peach_iq/screens/home/available_shifts_page.dart';
 import 'package:peach_iq/screens/home/homeScreen.dart';
 import 'package:peach_iq/screens/home/scheduled_shifts_page.dart';
-import 'package:peach_iq/screens/profile/edit_profile_sccreen.dart';
-import 'package:peach_iq/screens/profile/settings_screen.dart';
+import 'package:peach_iq/screens/profile/edit_profile/document_upload_page.dart';
+import 'package:peach_iq/screens/profile/edit_profile/edit_profile_sccreen.dart';
+import 'package:peach_iq/screens/profile/settings/about_screen.dart';
+import 'package:peach_iq/screens/profile/settings/privacy_policy_screen.dart';
+import 'package:peach_iq/screens/profile/settings/settings_screen.dart';
+import 'package:peach_iq/screens/profile/settings/terms_and_conditions_screen.dart';
 import 'package:peach_iq/screens/schedule/calender_widget.dart';
 import 'package:peach_iq/screens/schedule/schedule_page.dart';
+import 'package:peach_iq/screens/chech_in/todays_shifts_screen.dart';
 import 'package:peach_iq/screens/chech_in/check_in_screen.dart';
-import 'package:peach_iq/screens/chech_in/todays_shifts.dart';
 import 'package:peach_iq/widgets/bottom_nav.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/splash.dart';
@@ -37,6 +41,11 @@ class AppRoutes {
   static const String todaysShifts = '/todays-shifts';
   static const String checkIn = '/check-in';
   static const String changePassword = '/change-password';
+  static const String about = '/about';
+  static const String privacyPolicy = '/privacy-policy';
+  static const String termsAndConditions = '/terms-and-conditions';
+  // Add new route constant
+  static const String documentUpload = '/document-upload';
 }
 
 class AppShell extends StatefulWidget {
@@ -181,6 +190,26 @@ class AppRouter {
           builder: (_) =>
               const AppShell(initialIndex: 4, child: ChangePasswordScreen()),
         );
+      case AppRoutes.about:
+        return MaterialPageRoute(
+          builder: (_) => const AppShell(initialIndex: 4, child: AboutScreen()),
+        );
+      case AppRoutes.privacyPolicy:
+        return MaterialPageRoute(
+          builder: (_) =>
+              const AppShell(initialIndex: 4, child: PrivacyPolicyScreen()),
+        );
+      case AppRoutes.termsAndConditions:
+        return MaterialPageRoute(
+          builder: (_) => const AppShell(
+              initialIndex: 4, child: TermsAndConditionsScreen()),
+        );
+      // Add new route case
+      case AppRoutes.documentUpload:
+        return MaterialPageRoute(
+          builder: (_) =>
+              const AppShell(initialIndex: 4, child: DocumentUploadScreen()),
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => const AppShell(initialIndex: 0),
@@ -234,8 +263,24 @@ class AppNavigator {
     return pushNamed(context, AppRoutes.checkIn, arguments: shift);
   }
 
-  // <<< 4. ADD THIS HELPER METHOD
   static Future<void> toChangePassword(BuildContext context) {
     return pushNamed(context, AppRoutes.changePassword);
+  }
+
+  static Future<void> toAbout(BuildContext context) {
+    return pushNamed(context, AppRoutes.about);
+  }
+
+  static Future<void> toPrivacyPolicy(BuildContext context) {
+    return pushNamed(context, AppRoutes.privacyPolicy);
+  }
+
+  static Future<void> toTermsAndConditions(BuildContext context) {
+    return pushNamed(context, AppRoutes.termsAndConditions);
+  }
+
+  // Add new navigation helper
+  static Future<void> toDocumentUpload(BuildContext context) {
+    return pushNamed(context, AppRoutes.documentUpload);
   }
 }

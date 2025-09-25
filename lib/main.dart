@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:peach_iq/Providers/available_shifts_provider.dart';
 import 'package:peach_iq/Providers/calender_provider.dart';
 import 'package:peach_iq/Providers/chekinout_provider.dart';
+import 'package:peach_iq/Providers/content_page_provider.dart';
+import 'package:peach_iq/Providers/document_provider.dart';
 import 'package:peach_iq/Providers/forgot_password_provider.dart';
 import 'package:peach_iq/Providers/location_provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
+import 'package:peach_iq/Providers/profile_update_provider.dart';
 import 'package:peach_iq/Providers/response_provider.dart';
 import 'package:peach_iq/Providers/scheduled_shifts_provider.dart';
 import 'package:peach_iq/Providers/work_analysis_provider.dart';
@@ -38,6 +41,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CheckInCheckOutProvider()),
         ChangeNotifierProvider(create: (_) => CalenderProvider()),
         ChangeNotifierProvider(create: (_) => LocationProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileUpdateProvider()),
+        ChangeNotifierProvider(create: (_) => ContentPageProvider()),
+        ChangeNotifierProvider(create: (_) => DocumentProvider()),
       ],
       child: MaterialApp(
         title: 'Peach iQ',

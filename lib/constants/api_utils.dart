@@ -40,8 +40,21 @@ class ApiUrls {
   static String Locations() =>
       '$baseUrl/caregiver-dashboard/mapped-institutions';
 
-// Change Password
+  // Change Password
   static String ChangePassword() => '$baseUrl/users/change-password';
+
+  // Update caregiver
+  static String updateCaregiverStep1() => '$baseUrl/caregivers/update/step-1';
+
+  // Care Giver Profile
+  static String getCaregiver() => '$baseUrl/caregivers/';
+
+  // Get Pages
+  static String getPages() =>
+      '$baseUrl/content-page/get-all?page_type=Caregiver';
+
+  // add document
+  static String AddDocument() => '$baseUrl/caregivers/document/add';
 
   static void debugUrls() {
     print('Base URL: $baseUrl');
