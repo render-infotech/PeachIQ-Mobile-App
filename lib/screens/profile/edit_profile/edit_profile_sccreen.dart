@@ -152,8 +152,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     iconSize: 26,
                                     iconColor: Colors.black,
                                     title: 'Mobile Number',
-                                    subtitle: _detailedProfileData!
-                                        .caregiverDetails.phone1,
+                                    subtitle:
+                                        '${_detailedProfileData!.caregiverDetails.phone1Code} ${_detailedProfileData!.caregiverDetails.phone1}',
                                     onTap: () {
                                       showEditProfilePopup(
                                         context: context,

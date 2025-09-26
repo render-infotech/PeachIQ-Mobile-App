@@ -5,8 +5,24 @@ import 'package:peach_iq/screens/profile/settings/render_html.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:provider/provider.dart';
 
-class TermsAndConditionsScreen extends StatelessWidget {
+class TermsAndConditionsScreen extends StatefulWidget {
   const TermsAndConditionsScreen({super.key});
+
+  @override
+  State<TermsAndConditionsScreen> createState() =>
+      _TermsAndConditionsScreenState();
+}
+
+class _TermsAndConditionsScreenState extends State<TermsAndConditionsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Fetch fresh data every time this screen is opened
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final pageProvider = context.read<ContentPageProvider>();
+      pageProvider.fetchFreshPages();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +59,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
                   const Text(
                     'Terms & Conditions',
                     style: TextStyle(
-                      fontSize: 26,
+                      fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: AppColors.black,
                     ),

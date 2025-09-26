@@ -16,11 +16,11 @@ class DocumentProvider with ChangeNotifier {
 
   Future<bool> uploadDocument({
     required String documentName,
-    required String type,
-    required String membershipName,
+    String? type,
+    String? membershipName,
     required PlatformFile file,
-    required DateTime issueDate,
-    required DateTime expiryDate,
+    DateTime? issueDate,
+    DateTime? expiryDate,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -46,20 +46,48 @@ class DocumentProvider with ChangeNotifier {
 
       request.fields['caregiver_id'] = caregiverId.toString();
       request.fields['document_name'] = documentName;
-      request.fields['type'] = type.isEmpty ? 'NA' : type;
-      request.fields['membership_name'] =
-          membershipName.isEmpty ? 'NA' : membershipName;
-      request.fields['issue_date'] = DateFormat('yyyy-MM-dd').format(issueDate);
-      request.fields['expiry_date'] =
-          DateFormat('yyyy-MM-dd').format(expiryDate);
 
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'document',
-          file.path!,
-          filename: file.name,
-        ),
-      );
+      request.fields['type'] = (type != null && type.isNotEmpty) ? type : 'NA';
+      request.fields['membership_name'] =
+          (membershipName != null && membershipName.isNotEmpty)
+              ? membershipName
+              : 'NA';
+
+      if (issueDate != null) {
+        request.fields['issue_date'] =
+            DateFormat('yyyy-MM-dd').format(issueDate);
+      } else {
+        request.fields['issue_date'] = 'NA';
+      }
+
+      if (expiryDate != null) {
+        request.fields['expiry_date'] =
+            DateFormat('yyyy-MM-dd').format(expiryDate);
+      } else {
+        request.fields['expiry_date'] = 'NA';
+      }
+
+      // Attach file (required)
+      if (file.bytes != null && file.bytes!.isNotEmpty) {
+        // Prefer bytes whenever available (works on web and some desktops)
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'document',
+            file.bytes!,
+            filename: file.name,
+          ),
+        );
+      } else if (file.path != null && file.path!.isNotEmpty) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'document',
+            file.path!,
+            filename: file.name,
+          ),
+        );
+      } else {
+        throw Exception('Document file is mandatory');
+      }
 
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();

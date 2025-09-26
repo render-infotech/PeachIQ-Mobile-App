@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
 import 'package:peach_iq/Providers/document_provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
@@ -70,25 +71,50 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
 
   /// This function handles picking a file from the device.
   Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'doc', 'docx', 'jpg', 'png'],
-    );
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'jpg', 'png'],
+        withData: true,
+      );
 
-    if (result != null) {
-      setState(() {
-        _selectedFile = result.files.first;
-      });
+      if (result == null) return;
+
+      final picked = result.files.first;
+      // On some platforms, result.files.first.bytes can be null when the file
+      // is large; in that case we rely on the path.
+      if ((picked.bytes == null || picked.bytes!.isEmpty) &&
+          (picked.path == null || picked.path!.isEmpty)) {
+        throw Exception('Picked file has no data or path');
+      }
+
+      setState(() => _selectedFile = picked);
+
+      // Optional confirmation
+      if (mounted && _selectedFile != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Selected ${_selectedFile!.name}')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('File pick failed: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
   /// This function validates the form and calls the provider to upload the document.
   Future<void> _submitForm() async {
-    // 1. Validate all text fields
+    // 1. Validate only the name field (other text fields are now optional)
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    // 2. Check if a file has been selected
+
+    // 2. Check if a file has been selected - REQUIRED
     if (_selectedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -97,18 +123,11 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
       );
       return;
     }
-    // 3. Check if dates have been selected
-    if (_issueDate == null || _expiryDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please select both issue and expiry dates.'),
-            backgroundColor: Colors.red),
-      );
-      return;
-    }
 
-    // 4. Validate the date logic
-    if (_expiryDate!.isBefore(_issueDate!)) {
+    // 3. Validate the date logic only if both dates are provided
+    if (_issueDate != null &&
+        _expiryDate != null &&
+        _expiryDate!.isBefore(_issueDate!)) {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -126,29 +145,37 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
       return;
     }
 
-    // 5. Call the provider to perform the API POST request
+    // 4. Call the provider to perform the API POST request
     final provider = context.read<DocumentProvider>();
     final success = await provider.uploadDocument(
       documentName: _nameController.text,
-      type: _typeController.text,
-      membershipName: _membershipController.text,
+      type: _typeController.text.isEmpty ? null : _typeController.text,
+      membershipName: _membershipController.text.isEmpty
+          ? null
+          : _membershipController.text,
       file: _selectedFile!,
-      issueDate: _issueDate!,
-      expiryDate: _expiryDate!,
+      issueDate: _issueDate,
+      expiryDate: _expiryDate,
     );
 
-    // 6. Show feedback to the user
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(success
-              ? 'Document uploaded successfully!'
+              ? 'Document added successfully'
               : provider.errorMessage ?? 'Upload failed.'),
           backgroundColor: success ? Colors.green : Colors.red,
         ),
       );
       if (success) {
-        Navigator.pop(context);
+        setState(() {
+          _nameController.clear();
+          _typeController.clear();
+          _membershipController.clear();
+          _issueDate = null;
+          _expiryDate = null;
+          _selectedFile = null;
+        });
       }
     }
   }
@@ -167,7 +194,7 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                 builder: (context, p, _) => HeaderCard(
                   name: p.fullName,
                   subtitle: p.email.isNotEmpty ? p.email : null,
-                  pageheader: 'Document Details',
+                  pageheader: 'Upload Document',
                   onSignOut: () {},
                 ),
               ),
@@ -192,6 +219,10 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          DefaultTextStyle(
+                            style: const TextStyle(color: AppColors.black),
+                            child: const SizedBox.shrink(),
+                          ),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -200,6 +231,7 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                                   controller: _nameController,
                                   label: 'Name',
                                   hint: 'Document Name',
+                                  isRequired: true,
                                 ),
                               ),
                               const SizedBox(width: 16),
@@ -208,7 +240,6 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                                   controller: _typeController,
                                   label: 'Type',
                                   hint: 'Document Type',
-                                  isRequired: false,
                                 ),
                               ),
                             ],
@@ -219,7 +250,7 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                             label:
                                 'Membership of Any Association or Institution',
                             hint: 'Membership Name',
-                            isRequired: false,
+                            isRequired: false, // Remains optional
                           ),
                           const SizedBox(height: 24),
                           Row(
@@ -230,9 +261,13 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Document',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w500)),
+                                    const Text(
+                                      'Document',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.black,
+                                      ),
+                                    ),
                                     const SizedBox(height: 8),
                                     // This InkWell handles the tap action for picking a file
                                     InkWell(
@@ -366,7 +401,13 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w500,
+            color: AppColors.black,
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -404,7 +445,13 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w500,
+            color: AppColors.black,
+          ),
+        ),
         const SizedBox(height: 8),
         InkWell(
           onTap: onTap,
@@ -425,7 +472,7 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                   style: TextStyle(
                     color: selectedDate == null
                         ? Colors.grey.shade600
-                        : Colors.black,
+                        : AppColors.black,
                   ),
                 ),
                 const Icon(CupertinoIcons.calendar, color: Colors.grey),

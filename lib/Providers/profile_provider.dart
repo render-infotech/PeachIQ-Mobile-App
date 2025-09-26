@@ -84,6 +84,13 @@ class ProfileProvider extends ChangeNotifier {
         _profile = profileResp.data;
         _errorMessage = null;
         if (kDebugMode) print('Profile loaded successfully');
+
+        // Try to persist caregiver_id if present in an alternative endpoint
+        try {
+          // Some projects fetch detailed caregiver info elsewhere; if already
+          // available via ProfileUpdateProvider, skip here.
+          // No direct caregiver_id in this light profile model.
+        } catch (_) {}
       } else if (resp.statusCode == 401) {
         _errorMessage = 'Authentication failed. Please login again.';
         await _clearStoredToken();

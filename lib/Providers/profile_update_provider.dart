@@ -31,6 +31,14 @@ class ProfileUpdateProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final decodedResponse = caregiverProfileResponseFromJson(response.body);
+        // Persist caregiver_id for later API calls (e.g., document upload)
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setInt(
+            'caregiver_id',
+            decodedResponse.data.caregiverDetails.caregiverId,
+          );
+        } catch (_) {}
         return decodedResponse.data;
       } else {
         final responseBody = json.decode(response.body);

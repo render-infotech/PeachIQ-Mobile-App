@@ -5,8 +5,23 @@ import 'package:peach_iq/screens/profile/settings/render_html.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:provider/provider.dart';
 
-class AboutScreen extends StatelessWidget {
+class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
+
+  @override
+  State<AboutScreen> createState() => _AboutScreenState();
+}
+
+class _AboutScreenState extends State<AboutScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Fetch fresh data every time this screen is opened
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final pageProvider = context.read<ContentPageProvider>();
+      pageProvider.fetchFreshPages();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +58,7 @@ class AboutScreen extends StatelessWidget {
                   const Text(
                     'About us',
                     style: TextStyle(
-                      fontSize: 26,
+                      fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: AppColors.black,
                     ),

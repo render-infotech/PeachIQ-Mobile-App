@@ -61,6 +61,43 @@ class ContentPageProvider with ChangeNotifier {
     }
   }
 
+  /// Fetches all content pages from the API, always getting fresh data.
+  /// This method ignores the cache and always makes a new API call.
+  Future<void> fetchFreshPages() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('access_token');
+      if (token == null || token.isEmpty) {
+        throw Exception('Authentication token not found.');
+      }
+
+      final uri = Uri.parse(ApiUrls.getPages());
+      final response = await http.get(uri, headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      });
+
+      if (response.statusCode == 200) {
+        final decodedResponse =
+            ContentPageResponse.fromJson(json.decode(response.body));
+        _pages = decodedResponse.data;
+        _errorMessage = null;
+      } else {
+        throw Exception(
+            'Failed to load content pages (Status code: ${response.statusCode})');
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   /// Finds a specific page by its title from the cached list.
   /// Case-insensitive and trims whitespace for robust matching.
   ContentPage? getPageByTitle(String title) {
