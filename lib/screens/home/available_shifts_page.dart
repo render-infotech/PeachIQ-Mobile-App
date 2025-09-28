@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:peach_iq/screens/home/available_shift_card.dart';
+import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
@@ -36,35 +37,51 @@ class _AvailableShiftsState extends State<AvailableShifts> {
 
   void _handleSignOut(BuildContext context) {
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final profileProvider =
-                  Provider.of<ProfileProvider>(context, listen: false);
-              final shiftsProvider =
-                  Provider.of<AvailableShiftsProvider>(context, listen: false);
+        context: context,
+        builder: (context) => AlertDialog(
+              backgroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              title: const Text(
+                'Sign Out',
+                style: TextStyle(color: AppColors.black),
+              ),
+              content: const Text(
+                'Are you sure you want to sign out?',
+                style: TextStyle(color: AppColors.black),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final profileProvider =
+                        Provider.of<ProfileProvider>(context, listen: false);
+                    await profileProvider.logout();
 
-              await profileProvider.logout();
-              shiftsProvider.clear();
-
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginPage()),
-              );
-            },
-            child: const Text('Sign Out'),
-          ),
-        ],
-      ),
-    );
+                    // The 'mounted' check is important to prevent errors
+                    // if the widget is removed from the tree before the async operation completes.
+                    if (mounted) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (route) => false,
+                      );
+                    }
+                  },
+                  child: const Text(
+                    'Sign Out',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                ),
+              ],
+            ));
   }
 
   @override

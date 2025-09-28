@@ -246,17 +246,9 @@ class _AddressEditPopupState extends State<AddressEditPopup> {
                     const Text(
                       'Edit Address',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                         color: AppColors.black,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(
-                        Icons.close,
-                        color: AppColors.black,
-                        size: 20,
                       ),
                     ),
                   ],
@@ -361,6 +353,9 @@ class _AddressEditPopupState extends State<AddressEditPopup> {
                     ),
                   ),
                 ),
+                SizedBox(
+                  width: 8,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -373,10 +368,11 @@ class _AddressEditPopupState extends State<AddressEditPopup> {
                       ),
                       child: const Text(
                         'Cancel',
-                        style: TextStyle(fontSize: 12),
+                        style:
+                            TextStyle(fontSize: 14, color: AppColors.primary),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
@@ -397,7 +393,7 @@ class _AddressEditPopupState extends State<AddressEditPopup> {
                         backgroundColor: AppColors.AppSelectedGreen,
                         foregroundColor: AppColors.white,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 12),
+                            horizontal: 8, vertical: 4),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6),
                         ),
@@ -405,7 +401,7 @@ class _AddressEditPopupState extends State<AddressEditPopup> {
                       child: const Text(
                         'Save',
                         style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w600),
+                            fontSize: 14, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],

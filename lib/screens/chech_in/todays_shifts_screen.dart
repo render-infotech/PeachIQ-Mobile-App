@@ -19,7 +19,66 @@ class TodaysShiftsScreen extends StatefulWidget {
 
 class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
   void _handleSignOut(BuildContext context) {
-    // Implement sign-out logic here if needed
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        title: const Text(
+          'Sign Out',
+          style: TextStyle(color: AppColors.black),
+        ),
+        content: const Text(
+          'Are you sure you want to sign out?',
+          style: TextStyle(color: AppColors.black),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                final profileProvider =
+                    Provider.of<ProfileProvider>(context, listen: false);
+                final scheduledShiftsProvider =
+                    Provider.of<SchedulesShiftsProvider>(context,
+                        listen: false);
+
+                await profileProvider.logout();
+                // Assuming a 'clear' method exists on your provider to reset its state
+                scheduledShiftsProvider.clear();
+
+                if (!mounted) return;
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                  (route) => false,
+                );
+              } catch (e) {
+                debugPrint('Error during sign out: $e');
+                if (!mounted) return;
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                  (route) => false,
+                );
+              }
+            },
+            child: const Text(
+              'Sign Out',
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

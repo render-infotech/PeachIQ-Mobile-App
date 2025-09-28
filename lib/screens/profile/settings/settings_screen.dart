@@ -1,5 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:peach_iq/Providers/available_shifts_provider.dart';
+import 'package:peach_iq/Providers/scheduled_shifts_provider.dart';
+import 'package:peach_iq/Providers/work_analysis_provider.dart';
+import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
@@ -15,34 +19,73 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   void _handleSignOut(BuildContext context) {
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final profileProvider =
-                  Provider.of<ProfileProvider>(context, listen: false);
-              await profileProvider.logout();
+        context: context,
+        builder: (context) => AlertDialog(
+              backgroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              title: const Text(
+                'Sign Out',
+                style: TextStyle(color: AppColors.black),
+              ),
+              content: const Text(
+                'Are you sure you want to sign out?',
+                style: TextStyle(color: AppColors.black),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    try {
+                      final profileProvider =
+                          Provider.of<ProfileProvider>(context, listen: false);
+                      final availableShiftsProvider =
+                          Provider.of<AvailableShiftsProvider>(context,
+                              listen: false);
+                      final scheduledShiftsProvider =
+                          Provider.of<SchedulesShiftsProvider>(context,
+                              listen: false);
+                      final workAnalysisProvider =
+                          Provider.of<WorkAnalysisProvider>(context,
+                              listen: false);
 
-              if (mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginPage()),
-                  (route) => false,
-                );
-              }
-            },
-            child: const Text('Sign Out'),
-          ),
-        ],
-      ),
-    );
+                      await profileProvider.logout();
+                      availableShiftsProvider.clear();
+                      scheduledShiftsProvider.clear();
+                      workAnalysisProvider.clear();
+
+                      if (mounted) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                          (route) => false,
+                        );
+                      }
+                    } catch (e) {
+                      debugPrint('Error during sign out: $e');
+                      if (mounted) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                          (route) => false,
+                        );
+                      }
+                    }
+                  },
+                  child: const Text(
+                    'Sign Out',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                ),
+              ],
+            ));
   }
 
   @override

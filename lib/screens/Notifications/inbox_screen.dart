@@ -1,39 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:peach_iq/screens/Notifications/inbox_tabbar.dart';
+import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:peach_iq/constants/loading/shimmer_gate.dart';
 import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/screens/auth/login.dart';
 
-class InboxScreen extends StatelessWidget {
+// Converted to a StatefulWidget
+class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
 
+  @override
+  State<InboxScreen> createState() => _InboxScreenState();
+}
+
+class _InboxScreenState extends State<InboxScreen> {
   void _handleSignOut(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        title: const Text(
+          'Sign Out',
+          style: TextStyle(color: AppColors.black),
+        ),
+        content: const Text(
+          'Are you sure you want to sign out?',
+          style: TextStyle(color: AppColors.black),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(
+                dialogContext), // Use dialogContext to pop the dialog
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.primary),
+            ),
           ),
           TextButton(
             onPressed: () async {
-              // Use shared logout method
               final profileProvider =
                   Provider.of<ProfileProvider>(context, listen: false);
               await profileProvider.logout();
 
-              Navigator.pushReplacement(
-                context,
+              // This check now works correctly because we are in a State object.
+              if (!mounted) return;
+
+              Navigator.pushAndRemoveUntil(
+                context, // Use the original context for navigation
                 MaterialPageRoute(builder: (_) => const LoginPage()),
+                (route) => false,
               );
             },
-            child: const Text('Sign Out'),
+            child: const Text(
+              'Sign Out',
+              style: TextStyle(color: AppColors.primary),
+            ),
           ),
         ],
       ),
@@ -66,20 +93,6 @@ class InboxScreen extends StatelessWidget {
                       horizontal: 20,
                       vertical: 8,
                     ),
-                    // child: Row(
-                    //   children: [
-                    //     Expanded(
-                    //       child: Text(
-                    //         'Inbox',
-                    //         textAlign: TextAlign.center,
-                    //         style: TextStyle(
-                    //           fontSize: 20,
-                    //           fontWeight: FontWeight.w600,
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
                   ),
 
                   // Reusable styled TabBar (left-aligned)

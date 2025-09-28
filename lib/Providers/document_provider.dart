@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart' as http_parser;
 import 'package:intl/intl.dart';
 import 'package:peach_iq/constants/api_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -67,26 +68,82 @@ class DocumentProvider with ChangeNotifier {
         request.fields['expiry_date'] = 'NA';
       }
 
-      // Attach file (required)
+      if (kDebugMode) {
+        print('=== FILE DEBUG INFO ===');
+        print('File name: ${file.name}');
+        print('File size: ${file.size}');
+        print('File extension: ${file.extension}');
+        print('File bytes is null: ${file.bytes == null}');
+        print('File path is null: ${file.path == null}');
+        if (file.bytes != null) {
+          print('File bytes length: ${file.bytes!.length}');
+        }
+        if (file.path != null) {
+          print('File path: ${file.path}');
+        }
+      }
+
+      bool fileAdded = false;
+
+      String getMimeType(String extension) {
+        switch (extension.toLowerCase()) {
+          case 'pdf':
+            return 'application/pdf';
+          case 'doc':
+            return 'application/msword';
+          case 'docx':
+            return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          case 'jpg':
+          case 'jpeg':
+            return 'image/jpeg';
+          case 'png':
+            return 'image/png';
+          default:
+            return 'application/octet-stream';
+        }
+      }
+
       if (file.bytes != null && file.bytes!.isNotEmpty) {
-        // Prefer bytes whenever available (works on web and some desktops)
+        if (kDebugMode) {
+          print('Adding file from bytes (web)');
+        }
         request.files.add(
           http.MultipartFile.fromBytes(
-            'document',
+            'document_file',
             file.bytes!,
             filename: file.name,
+            contentType:
+                http_parser.MediaType.parse(getMimeType(file.extension ?? '')),
           ),
         );
+        fileAdded = true;
       } else if (file.path != null && file.path!.isNotEmpty) {
+        if (kDebugMode) {
+          print('Adding file from path (mobile): ${file.path}');
+        }
         request.files.add(
           await http.MultipartFile.fromPath(
-            'document',
+            'document_file',
             file.path!,
             filename: file.name,
+            contentType:
+                http_parser.MediaType.parse(getMimeType(file.extension ?? '')),
           ),
         );
-      } else {
-        throw Exception('Document file is mandatory');
+        fileAdded = true;
+      }
+
+      if (!fileAdded) {
+        if (kDebugMode) {
+          print('ERROR: No file could be added to request');
+        }
+        throw Exception(
+            'Document file is mandatory - no valid file data found');
+      }
+
+      if (kDebugMode) {
+        print('Request files count: ${request.files.length}');
+        print('Request fields: ${request.fields}');
       }
 
       final response = await request.send();

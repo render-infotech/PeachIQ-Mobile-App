@@ -48,36 +48,51 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
 
   void _handleSignOut(BuildContext context) {
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final profileProvider =
-                  Provider.of<ProfileProvider>(context, listen: false);
-              final schedulesProvider =
-                  Provider.of<SchedulesShiftsProvider>(context, listen: false);
-              await profileProvider.logout();
-              schedulesProvider.clear();
-              if (mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginPage()),
-                  (route) => false,
-                );
-              }
-            },
-            child: const Text('Sign Out'),
-          ),
-        ],
-      ),
-    );
+        context: context,
+        builder: (context) => AlertDialog(
+              backgroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              title: const Text(
+                'Sign Out',
+                style: TextStyle(color: AppColors.black),
+              ),
+              content: const Text(
+                'Are you sure you want to sign out?',
+                style: TextStyle(color: AppColors.black),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final profileProvider =
+                        Provider.of<ProfileProvider>(context, listen: false);
+                    await profileProvider.logout();
+
+                    // The 'mounted' check is important to prevent errors
+                    // if the widget is removed from the tree before the async operation completes.
+                    if (mounted) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (route) => false,
+                      );
+                    }
+                  },
+                  child: const Text(
+                    'Sign Out',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                ),
+              ],
+            ));
   }
 
   @override

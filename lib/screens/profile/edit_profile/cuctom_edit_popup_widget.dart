@@ -60,17 +60,9 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                   Text(
                     'Edit ${widget.title}',
                     style: TextStyle(
-                      fontSize: 18,
-                      color: AppColors.black,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(
-                      Icons.close,
-                      color: AppColors.black,
-                      size: 20,
-                    ),
+                        fontSize: 15,
+                        color: AppColors.black,
+                        fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -133,7 +125,6 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  // Cancel Button
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: TextButton.styleFrom(
@@ -143,10 +134,10 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                     ),
                     child: const Text(
                       'Cancel',
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 14, color: AppColors.primary),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
 
                   // Save Button
                   ElevatedButton(
@@ -160,15 +151,15 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                       backgroundColor: AppColors.AppSelectedGreen,
                       foregroundColor: AppColors.white,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
+                          horizontal: 8, vertical: 4),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     child: const Text(
                       'Save',
                       style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],

@@ -230,57 +230,73 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleSignOut() {
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              try {
-                final profileProvider =
-                    Provider.of<ProfileProvider>(context, listen: false);
-                final availableShiftsProvider =
-                    Provider.of<AvailableShiftsProvider>(context,
-                        listen: false);
-                final scheduledShiftsProvider =
-                    Provider.of<SchedulesShiftsProvider>(context,
-                        listen: false);
-                final workAnalysisProvider =
-                    Provider.of<WorkAnalysisProvider>(context, listen: false);
+        context: context,
+        builder: (context) => AlertDialog(
+              backgroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              title: const Text(
+                'Sign Out',
+                style: TextStyle(color: AppColors.black),
+              ),
+              content: const Text(
+                'Are you sure you want to sign out?',
+                style: TextStyle(color: AppColors.black),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    try {
+                      final profileProvider =
+                          Provider.of<ProfileProvider>(context, listen: false);
+                      final availableShiftsProvider =
+                          Provider.of<AvailableShiftsProvider>(context,
+                              listen: false);
+                      final scheduledShiftsProvider =
+                          Provider.of<SchedulesShiftsProvider>(context,
+                              listen: false);
+                      final workAnalysisProvider =
+                          Provider.of<WorkAnalysisProvider>(context,
+                              listen: false);
 
-                await profileProvider.logout();
-                availableShiftsProvider.clear();
-                scheduledShiftsProvider.clear();
-                workAnalysisProvider.clear();
+                      await profileProvider.logout();
+                      availableShiftsProvider.clear();
+                      scheduledShiftsProvider.clear();
+                      workAnalysisProvider.clear();
 
-                if (mounted) {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginPage()),
-                    (route) => false,
-                  );
-                }
-              } catch (e) {
-                debugPrint('Error during sign out: $e');
-                if (mounted) {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginPage()),
-                    (route) => false,
-                  );
-                }
-              }
-            },
-            child: const Text('Sign Out'),
-          ),
-        ],
-      ),
-    );
+                      if (mounted) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                          (route) => false,
+                        );
+                      }
+                    } catch (e) {
+                      debugPrint('Error during sign out: $e');
+                      if (mounted) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                          (route) => false,
+                        );
+                      }
+                    }
+                  },
+                  child: const Text(
+                    'Sign Out',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                ),
+              ],
+            ));
   }
 }
 

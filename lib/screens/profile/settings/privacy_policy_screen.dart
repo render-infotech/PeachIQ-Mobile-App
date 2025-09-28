@@ -16,7 +16,6 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch fresh data every time this screen is opened
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final pageProvider = context.read<ContentPageProvider>();
       pageProvider.fetchFreshPages();
@@ -67,7 +66,6 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            // Use the reusable widget here
             RenderHtmlContent(
               provider: pageProvider,
               page: privacyPage,

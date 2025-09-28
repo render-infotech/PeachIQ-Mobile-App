@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
 import 'package:peach_iq/Providers/document_provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
+import 'package:peach_iq/screens/auth/login.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +34,54 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
     _typeController.dispose();
     _membershipController.dispose();
     super.dispose();
+  }
+
+  // ADDED: Sign out logic from CheckInScreen
+  void _handleSignOut(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              backgroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              title: const Text(
+                'Sign Out',
+                style: TextStyle(color: AppColors.black),
+              ),
+              content: const Text(
+                'Are you sure you want to sign out?',
+                style: TextStyle(color: AppColors.black),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final profileProvider =
+                        Provider.of<ProfileProvider>(context, listen: false);
+                    await profileProvider.logout();
+
+                    if (mounted) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (route) => false,
+                      );
+                    }
+                  },
+                  child: const Text(
+                    'Sign Out',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                ),
+              ],
+            ));
   }
 
   Future<void> _pickDate(BuildContext context, bool isIssueDate) async {
@@ -69,20 +118,34 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
     }
   }
 
-  /// This function handles picking a file from the device.
   Future<void> _pickFile() async {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'doc', 'docx', 'jpg', 'png'],
-        withData: true,
+        withData: kIsWeb,
       );
 
       if (result == null) return;
 
       final picked = result.files.first;
-      // On some platforms, result.files.first.bytes can be null when the file
-      // is large; in that case we rely on the path.
+
+      if (kDebugMode) {
+        print('=== PICKED FILE DEBUG ===');
+        print('File name: ${picked.name}');
+        print('File size: ${picked.size}');
+        print('File extension: ${picked.extension}');
+        print('File bytes is null: ${picked.bytes == null}');
+        print('File path is null: ${picked.path == null}');
+        if (picked.bytes != null) {
+          print('File bytes length: ${picked.bytes!.length}');
+        }
+        if (picked.path != null) {
+          print('File path: ${picked.path}');
+        }
+        print('kIsWeb: $kIsWeb');
+      }
+
       if ((picked.bytes == null || picked.bytes!.isEmpty) &&
           (picked.path == null || picked.path!.isEmpty)) {
         throw Exception('Picked file has no data or path');
@@ -90,13 +153,15 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
 
       setState(() => _selectedFile = picked);
 
-      // Optional confirmation
       if (mounted && _selectedFile != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Selected ${_selectedFile!.name}')),
         );
       }
     } catch (e) {
+      if (kDebugMode) {
+        print('File pick error: $e');
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -107,14 +172,11 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
     }
   }
 
-  /// This function validates the form and calls the provider to upload the document.
   Future<void> _submitForm() async {
-    // 1. Validate only the name field (other text fields are now optional)
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    // 2. Check if a file has been selected - REQUIRED
     if (_selectedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -124,28 +186,37 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
       return;
     }
 
-    // 3. Validate the date logic only if both dates are provided
     if (_issueDate != null &&
         _expiryDate != null &&
         _expiryDate!.isBefore(_issueDate!)) {
       showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Invalid Date'),
-          content:
-              const Text('The expiry date cannot be before the issue date.'),
-          actions: [
-            TextButton(
-              child: const Text('Okay'),
-              onPressed: () => Navigator.of(ctx).pop(),
-            ),
-          ],
-        ),
-      );
+          context: context,
+          builder: (ctx) => AlertDialog(
+                backgroundColor: AppColors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                title: const Text(
+                  'Invalid Date',
+                  style: TextStyle(color: AppColors.black),
+                ),
+                content: const Text(
+                  'The expiry date cannot be before the issue date.',
+                  style: TextStyle(color: AppColors.black),
+                ),
+                actions: [
+                  TextButton(
+                    child: const Text(
+                      'Okay',
+                      style: TextStyle(color: AppColors.primary),
+                    ),
+                    onPressed: () => Navigator.of(ctx).pop(),
+                  ),
+                ],
+              ));
       return;
     }
 
-    // 4. Call the provider to perform the API POST request
     final provider = context.read<DocumentProvider>();
     final success = await provider.uploadDocument(
       documentName: _nameController.text,
@@ -195,7 +266,7 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                   name: p.fullName,
                   subtitle: p.email.isNotEmpty ? p.email : null,
                   pageheader: 'Upload Document',
-                  onSignOut: () {},
+                  onSignOut: () => _handleSignOut(context), // Updated
                 ),
               ),
               Expanded(
@@ -240,6 +311,7 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                                   controller: _typeController,
                                   label: 'Type',
                                   hint: 'Document Type',
+                                  isRequired: false,
                                 ),
                               ),
                             ],
@@ -250,7 +322,7 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                             label:
                                 'Membership of Any Association or Institution',
                             hint: 'Membership Name',
-                            isRequired: false, // Remains optional
+                            isRequired: false,
                           ),
                           const SizedBox(height: 24),
                           Row(
@@ -269,7 +341,6 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                                       ),
                                     ),
                                     const SizedBox(height: 8),
-                                    // This InkWell handles the tap action for picking a file
                                     InkWell(
                                       onTap: _pickFile,
                                       child: Container(
@@ -293,7 +364,8 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                                                     Icon(
                                                         CupertinoIcons
                                                             .cloud_upload,
-                                                        color: Colors.orange,
+                                                        color:
+                                                            AppColors.primary,
                                                         size: 40),
                                                     SizedBox(height: 8),
                                                     Text('Tap to Upload'),
@@ -355,7 +427,6 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                           Align(
                             alignment: Alignment.bottomRight,
                             child: ElevatedButton(
-                              // The onPressed calls the _submitForm method
                               onPressed:
                                   docProvider.isLoading ? null : _submitForm,
                               style: ElevatedButton.styleFrom(
