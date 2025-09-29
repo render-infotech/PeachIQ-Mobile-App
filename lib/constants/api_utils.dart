@@ -56,6 +56,16 @@ class ApiUrls {
   // add document
   static String AddDocument() => '$baseUrl/caregivers/document/add';
 
+  // get country name
+  static String getCountries() => '$baseUrl/countries/?country_name=';
+
+  // get States
+  static String getStates({required int countryId}) =>
+      '$baseUrl/states/?country_id=$countryId';
+  // get cities
+  static String getCities({required int countryId, required int stateId}) =>
+      '$baseUrl/cities/?country_id=$countryId&state_id=$stateId';
+
   static void debugUrls() {
     print('Base URL: $baseUrl');
     print('Login URL: ${login()}');

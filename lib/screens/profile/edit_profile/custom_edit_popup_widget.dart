@@ -8,6 +8,7 @@ class EditProfilePopup extends StatefulWidget {
   final Function(String) onSave;
   final TextInputType? keyboardType;
   final int? maxLines;
+  final String? prefixText;
 
   const EditProfilePopup({
     Key? key,
@@ -17,6 +18,7 @@ class EditProfilePopup extends StatefulWidget {
     required this.onSave,
     this.keyboardType,
     this.maxLines = 1,
+    this.prefixText,
   }) : super(key: key);
 
   @override
@@ -67,13 +69,24 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                 ],
               ),
               const SizedBox(height: 16),
-
               TextFormField(
                 controller: _controller,
                 keyboardType: widget.keyboardType ?? TextInputType.text,
                 maxLines: widget.maxLines,
-                style: TextStyle(color: AppColors.black),
+                style: TextStyle(color: AppColors.black, fontSize: 16),
                 decoration: InputDecoration(
+                  prefixIcon: widget.prefixText != null
+                      ? Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 12, 0, 0),
+                          child: Text(
+                            widget.prefixText!,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.black.withOpacity(0.7),
+                            ),
+                          ),
+                        )
+                      : null,
                   labelText: widget.title,
                   hintText: widget.hintText,
                   labelStyle: TextStyle(color: AppColors.black),
@@ -100,28 +113,14 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                     return '${widget.title} cannot be empty';
                   }
 
-                  // Email validation
-                  if (widget.title.toLowerCase() == 'email') {
-                    final emailRegex =
-                        RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                    if (!emailRegex.hasMatch(value)) {
-                      return 'Please enter a valid email address';
-                    }
-                  }
-
-                  if (widget.title.toLowerCase().contains('mobile') ||
-                      widget.title.toLowerCase().contains('phone')) {
-                    if (value.length < 10) {
-                      return 'Please enter a valid mobile number';
-                    }
+                  if (value.length < 10) {
+                    return 'Please enter a valid mobile number';
                   }
 
                   return null;
                 },
               ),
               const SizedBox(height: 24),
-
-              // Action Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -138,8 +137,6 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                     ),
                   ),
                   const SizedBox(width: 8),
-
-                  // Save Button
                   ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
@@ -172,7 +169,6 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
   }
 }
 
-// Helper function to show the popup
 void showEditProfilePopup({
   required BuildContext context,
   required String title,
@@ -181,6 +177,7 @@ void showEditProfilePopup({
   required Function(String) onSave,
   TextInputType? keyboardType,
   int? maxLines,
+  String? prefixText,
 }) {
   showDialog(
     context: context,
@@ -192,6 +189,7 @@ void showEditProfilePopup({
         onSave: onSave,
         keyboardType: keyboardType,
         maxLines: maxLines,
+        prefixText: prefixText,
       );
     },
   );

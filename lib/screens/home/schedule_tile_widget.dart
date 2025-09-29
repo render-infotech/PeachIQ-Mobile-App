@@ -4,7 +4,6 @@ import 'package:peach_iq/shared/themes/Appcolors.dart';
 
 class ScheduleTile extends StatelessWidget {
   final String facility;
-  // final String floorWing;
   final String dateLine;
   final String time;
   final bool isSelected;
@@ -13,13 +12,13 @@ class ScheduleTile extends StatelessWidget {
   const ScheduleTile({
     super.key,
     required this.facility,
-    // required this.floorWing,
     required this.dateLine,
     required this.time,
     this.isSelected = false,
     this.onTap,
   });
 
+  // This helper function for date suffixes is unchanged.
   (String prefix, String suffix, String postfix) _splitOrdinal(String input) {
     final parts = input.split(' ');
     if (parts.length < 4) return (input, '', '');
@@ -42,7 +41,7 @@ class ScheduleTile extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: AppColors.cardsWhite,
           borderRadius: BorderRadius.circular(10),
@@ -73,78 +72,67 @@ class ScheduleTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      // Wrapped with Expanded and added overflow handling
-                      Expanded(
-                        child: Text(
-                          facility,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 18,
-                            color: AppColors.black,
-                          ),
-                        ),
-                      ),
-                      // const SizedBox(width: 37),
-                      // Text(
-                      //   floorWing,
-                      //   overflow: TextOverflow.ellipsis,
-                      //   style: const TextStyle(
-                      //     fontSize: 16,
-                      //     color: Colors.black87,
-                      //   ),
-                      // ),
-                    ],
+                  Text(
+                    facility,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                      color: AppColors.black,
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  Row(
+                  // const SizedBox(height: 6),
+
+                  // UPDATED: Replaced the Row with a Column for a vertical layout.
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: split.$2.isEmpty
-                            ? Text(
-                                dateLine,
-                                // Added overflow handling
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                      // Date Line (unchanged, but now the first item in the Column)
+                      split.$2.isEmpty
+                          ? Text(
+                              dateLine,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.black87,
+                              ),
+                            )
+                          : RichText(
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              text: TextSpan(
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.black87,
+                                  fontFamily: 'Roboto',
                                 ),
-                              )
-                            : RichText(
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                text: TextSpan(
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.black87,
-                                    fontFamily: 'Roboto',
-                                  ),
-                                  children: [
-                                    TextSpan(text: split.$1),
-                                    WidgetSpan(
-                                      alignment: PlaceholderAlignment.top,
-                                      child: Transform.translate(
-                                        offset: const Offset(0, -3),
-                                        child: Text(
-                                          split.$2,
-                                          style: const TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black87,
-                                          ),
+                                children: [
+                                  TextSpan(text: split.$1),
+                                  WidgetSpan(
+                                    alignment: PlaceholderAlignment.top,
+                                    child: Transform.translate(
+                                      offset: const Offset(0, -3),
+                                      child: Text(
+                                        split.$2,
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
                                         ),
                                       ),
                                     ),
-                                    TextSpan(text: split.$3),
-                                  ],
-                                ),
+                                  ),
+                                  TextSpan(text: split.$3),
+                                ],
                               ),
-                      ),
-                      const SizedBox(width: 12),
+                            ),
+
+                      // ADDED: Spacing between the date and time
+                      const SizedBox(height: 4),
+
+                      // Time Line (now the second item in the Column)
                       Row(
                         children: [
                           Builder(
@@ -156,7 +144,6 @@ class ScheduleTile extends StatelessWidget {
                                   height: 20,
                                 );
                               } catch (e) {
-                                // ignore: avoid_print
                                 print('SVG Error: $e');
                                 return Icon(
                                   Icons.access_time,

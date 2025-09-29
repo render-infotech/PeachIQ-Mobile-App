@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:peach_iq/Providers/profile_update_provider.dart';
 import 'package:peach_iq/models/caregiver_profile_model.dart';
 import 'package:peach_iq/screens/profile/edit_profile/address_edit_widget.dart';
-import 'package:peach_iq/screens/profile/edit_profile/cuctom_edit_popup_widget.dart';
+import 'package:peach_iq/screens/profile/edit_profile/custom_edit_popup_widget.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
@@ -18,14 +18,12 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // State to hold the detailed profile data
   ProfileData? _detailedProfileData;
   bool _isFetchingDetails = true;
 
   @override
   void initState() {
     super.initState();
-    // Fetch detailed profile data when the screen is first loaded
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchDetails();
     });
@@ -35,7 +33,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       _isFetchingDetails = true;
     });
-    // Use the new provider to fetch the detailed data
     final provider = context.read<ProfileUpdateProvider>();
     final data = await provider.fetchCaregiverDetailsForUpdate();
     if (mounted) {
@@ -92,12 +89,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ));
   }
 
+  String _formatAddress(CaregiverDetails? details) {
+    if (details == null) {
+      return 'No address available';
+    }
+    final parts = [
+      details.addressLine,
+      details.city?.cityName,
+      details.state?.stateName,
+      details.country?.countryName,
+      details.postalCode,
+    ];
+    final validParts = parts.where((p) => p != null && p.trim().isNotEmpty);
+    return validParts.isEmpty ? 'No address provided' : validParts.join(', ');
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Your existing provider for the header
     final headerProvider = context.watch<ProfileProvider>();
-    // The new provider for loading states and actions
     final updateProvider = context.watch<ProfileUpdateProvider>();
+
+    final profileData = _detailedProfileData;
+    final caregiverDetails = profileData?.caregiverDetails;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
@@ -109,7 +122,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 HeaderCard(
                   name: headerProvider.fullName,
                   subtitle: headerProvider.email,
-                  pageheader: '      Edit profile',
+                  pageheader: '       Edit profile',
                   onSignOut: () => _handleSignOut(context),
                 ),
                 Positioned(
@@ -126,7 +139,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Expanded(
               child: _isFetchingDetails
                   ? const Center(child: CircularProgressIndicator())
-                  : _detailedProfileData == null
+                  : profileData == null
                       ? Center(
                           child: Padding(
                           padding: const EdgeInsets.all(16.0),
@@ -156,7 +169,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     icon: Icons.email_outlined,
                                     iconSize: 26,
                                     title: 'Email',
-                                    subtitle: _detailedProfileData!.email,
+                                    subtitle:
+                                        profileData.email ?? 'Not available',
                                   ),
                                   const SizedBox(height: 8),
                                   _ProfileTile(
@@ -166,13 +180,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     iconColor: Colors.black,
                                     title: 'Mobile Number',
                                     subtitle:
-                                        '${_detailedProfileData!.caregiverDetails.phone1Code} ${_detailedProfileData!.caregiverDetails.phone1}',
+                                        '${caregiverDetails?.phone1Code ?? ''} ${caregiverDetails?.phone1 ?? ''}'
+                                            .trim(),
                                     onTap: () {
+                                      if (caregiverDetails == null) return;
                                       showEditProfilePopup(
                                         context: context,
                                         title: 'Mobile Number',
-                                        currentValue: _detailedProfileData!
-                                            .caregiverDetails.phone1,
+                                        prefixText:
+                                            caregiverDetails.phone1Code ?? '',
+                                        currentValue:
+                                            caregiverDetails.phone1 ?? '',
                                         hintText: 'Enter your mobile number',
                                         keyboardType: TextInputType.phone,
                                         onSave: (newMobile) async {
@@ -180,8 +198,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               .read<ProfileUpdateProvider>()
                                               .updatePhoneNumber(
                                                 context: context,
-                                                profileData:
-                                                    _detailedProfileData!,
+                                                profileData: profileData,
                                                 newPhoneNumber: newMobile,
                                               );
 
@@ -200,7 +217,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               ),
                                             );
                                             if (success) {
-                                              // Refetch details to show updated number
                                               _fetchDetails();
                                             }
                                           }
@@ -216,33 +232,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     iconSize: 26,
                                     iconColor: const Color(0xFF7C4DFF),
                                     title: 'Address',
-                                    subtitle:
-                                        '1234, John Street, Toronto, M1L 1V3', // Reverted to static text
+                                    subtitle: _formatAddress(caregiverDetails),
                                     onTap: () {
-                                      // Reverted to original functionality with static data
+                                      final details = caregiverDetails;
+                                      if (details == null) return;
+
                                       final currentAddress = AddressData(
-                                        country: 'CANADA',
-                                        stateProvince: 'ONTARIO',
-                                        city: 'AJAX',
-                                        addressLine: '1234, John Street',
-                                        postalCode: 'M1L 1V3',
-                                        location: '',
-                                        about: '',
+                                        country:
+                                            details.country?.countryName ?? '',
+                                        stateProvince:
+                                            details.state?.stateName ?? '',
+                                        city: details.city?.cityName ?? '',
+                                        addressLine: details.addressLine ?? '',
+                                        postalCode: details.postalCode ?? '',
+                                        location: details.location ?? '',
+                                        about: details.about ?? '',
                                       );
                                       showAddressEditPopup(
                                         context: context,
                                         currentAddress: currentAddress,
-                                        onSave: (AddressData newAddressData) {
-                                          print(
-                                              'New address data: ${newAddressData.country}, ${newAddressData.stateProvince}');
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                  'Address updated successfully!'),
-                                              backgroundColor: Colors.green,
-                                            ),
+                                        onSave: ({
+                                          required countryId,
+                                          required stateId,
+                                          required cityId,
+                                          required addressLine,
+                                          required postalCode,
+                                          required location,
+                                          required about,
+                                        }) async {
+                                          final updateProvider = context
+                                              .read<ProfileUpdateProvider>();
+                                          final success = await updateProvider
+                                              .updateAddress(
+                                            context: context,
+                                            profileData: profileData,
+                                            newCountryId: countryId,
+                                            newStateId: stateId,
+                                            newCityId: cityId,
+                                            newAddressLine: addressLine,
+                                            newPostalCode: postalCode,
+                                            newLocation: location,
+                                            newAbout: about,
                                           );
+
+                                          if (mounted) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(success
+                                                    ? 'Address updated successfully!'
+                                                    : updateProvider
+                                                            .errorMessage ??
+                                                        'Update failed.'),
+                                                backgroundColor: success
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                              ),
+                                            );
+                                            if (success) {
+                                              _fetchDetails();
+                                            }
+                                          }
                                         },
                                       );
                                     },
@@ -265,7 +315,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     title: 'Documents',
                                     subtitle: 'Upload required documents',
                                     onTap: () {
-                                      // UPDATED: Navigate to the document upload screen
                                       AppNavigator.toDocumentUpload(context);
                                     },
                                   ),
@@ -360,7 +409,7 @@ class _ProfileTile extends StatelessWidget {
                       fontFamily: 'Manrope',
                     ),
                   ),
-                  if (subtitle != null) ...[
+                  if (subtitle != null && subtitle!.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,

@@ -6,6 +6,7 @@ import 'package:peach_iq/Providers/chekinout_provider.dart';
 import 'package:peach_iq/Providers/content_page_provider.dart';
 import 'package:peach_iq/Providers/document_provider.dart';
 import 'package:peach_iq/Providers/forgot_password_provider.dart';
+import 'package:peach_iq/Providers/get_address_details_provider.dart';
 import 'package:peach_iq/Providers/location_provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/Providers/profile_update_provider.dart';
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ProfileUpdateProvider()),
         ChangeNotifierProvider(create: (_) => ContentPageProvider()),
         ChangeNotifierProvider(create: (_) => DocumentProvider()),
+        ChangeNotifierProvider(create: (_) => AddressProvider()),
       ],
       child: MaterialApp(
         title: 'Peach iQ',

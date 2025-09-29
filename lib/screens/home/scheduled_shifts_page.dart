@@ -1,5 +1,3 @@
-// lib/screens/home/scheduled_shifts_page.dart
-
 import 'dart:ui' show FontFeature;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -76,8 +74,6 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
                         Provider.of<ProfileProvider>(context, listen: false);
                     await profileProvider.logout();
 
-                    // The 'mounted' check is important to prevent errors
-                    // if the widget is removed from the tree before the async operation completes.
                     if (mounted) {
                       Navigator.pushAndRemoveUntil(
                         context,
@@ -107,7 +103,7 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
               builder: (context, p, _) => HeaderCard(
                 name: p.fullName,
                 subtitle: p.email.isNotEmpty ? p.email : null,
-                pageheader: 'Upcoming Shifts',
+                pageheader: 'All Monthly Shifts',
                 onSignOut: () => _handleSignOut(context),
               ),
             ),
@@ -115,10 +111,7 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
             Expanded(
               child: Consumer<SchedulesShiftsProvider>(
                 builder: (context, provider, child) {
-                  // ==================== CHANGE START ====================
-                  // Use the sorted `upcomingSchedules` list here.
-                  final shiftsToDisplay = provider.upcomingSchedules;
-                  // ===================== CHANGE END =====================
+                  final shiftsToDisplay = provider.allSchedulesForMonth;
 
                   if (provider.isLoading) {
                     return const Center(child: CircularProgressIndicator());
@@ -141,35 +134,29 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
                     );
                   }
 
-                  // ==================== CHANGE START ====================
-                  // Check the new sorted list for emptiness.
                   if (shiftsToDisplay.isEmpty) {
-                    // ===================== CHANGE END =====================
                     return const Center(
                       child: Text(
-                        'You have no upcoming shifts.',
+                        'You have no scheduled shifts for this month.',
                         style: TextStyle(fontSize: 18, color: Colors.grey),
                       ),
                     );
                   }
 
-                  if (selectedShiftIndex >= shiftsToDisplay.length) {
-                    selectedShiftIndex = 0;
-                  }
-
-                  return ListView(
+                  return ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    // ==================== CHANGE START ====================
-                    // Build the list using the sorted `shiftsToDisplay`.
-                    children: shiftsToDisplay.asMap().entries.map((entry) {
-                      // ===================== CHANGE END =====================
-                      final index = entry.key;
-                      final shift = entry.value;
+                    itemCount: shiftsToDisplay.length,
+                    itemBuilder: (context, index) {
+                      final shift = shiftsToDisplay[index];
+                      final timeFormat = DateFormat('h:mm a');
+
                       return ScheduleTile(
                         facility: shift.institution,
+                        // UPDATED: Changed date format to "Month Day, Weekday"
                         dateLine:
-                            DateFormat("EEEE, MMMM d").format(shift.start),
-                        time: DateFormat('h:mm a').format(shift.start),
+                            DateFormat("MMMM d, EEEE").format(shift.start),
+                        time:
+                            '${timeFormat.format(shift.start)} to ${timeFormat.format(shift.end)}',
                         isSelected: index == selectedShiftIndex,
                         onTap: () {
                           setState(() {
@@ -178,7 +165,7 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
                           _showShiftDetailsPopup(context, shift);
                         },
                       );
-                    }).toList(),
+                    },
                   );
                 },
               ),
@@ -193,7 +180,11 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
 class _ShiftDetailsSheet extends StatelessWidget {
   final ScheduledShift shift;
 
-  const _ShiftDetailsSheet({required this.shift});
+  final DateFormat _timeFormat = DateFormat('h:mm a');
+  final DateFormat _weekdayFormat = DateFormat('EEEE');
+  final DateFormat _monthFormat = DateFormat('MMMM');
+
+  _ShiftDetailsSheet({required this.shift});
 
   String _getDaySuffix(int day) {
     if (day >= 11 && day <= 13) return 'th';
@@ -210,13 +201,12 @@ class _ShiftDetailsSheet extends StatelessWidget {
   }
 
   String _formatShiftTimeRange(DateTime start, DateTime end) {
-    final format = DateFormat('h:mm a');
-    return '${format.format(start)} to ${format.format(end)}';
+    return '${_timeFormat.format(start)} to ${_timeFormat.format(end)}';
   }
 
   Widget _buildFormattedDate(DateTime date) {
-    String weekday = DateFormat('EEEE').format(date);
-    String month = DateFormat('MMMM').format(date);
+    String weekday = _weekdayFormat.format(date);
+    String month = _monthFormat.format(date);
     String suffix = _getDaySuffix(date.day);
     return RichText(
       text: TextSpan(

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:async'; // Import for TimeoutException
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:peach_iq/Models/scheduled_shifts_model.dart';
@@ -14,8 +14,10 @@ class SchedulesShiftsProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
+  // This is the original unfiltered list
   List<ScheduledShift> get schedules => _schedules;
 
+  // This getter remains for your HomeScreen, showing ONLY upcoming shifts
   List<ScheduledShift> get upcomingSchedules {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -28,12 +30,20 @@ class SchedulesShiftsProvider extends ChangeNotifier {
     return filtered;
   }
 
+  // NEW: This getter returns ALL shifts for the month, sorted by date.
+  // The ScheduledShifts page will use this.
+  List<ScheduledShift> get allSchedulesForMonth {
+    // Create a mutable copy before sorting
+    final sortedList = List<ScheduledShift>.from(_schedules);
+    sortedList.sort((a, b) => a.start.compareTo(b.start));
+    return sortedList;
+  }
+
   Future<void> fetchScheduledShifts({DateTime? forDate}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
-    // --- Start of Enhanced Logging ---
     debugPrint('--- [START] Fetching Scheduled Shifts ---');
 
     try {
@@ -56,7 +66,6 @@ class SchedulesShiftsProvider extends ChangeNotifier {
         'X-Client-IP': kStaticClientIp,
       };
 
-      // Log the outgoing request
       debugPrint('🌐 REQUEST  => GET $uri');
       debugPrint('📋 HEADERS  => $headers');
 
@@ -67,7 +76,6 @@ class SchedulesShiftsProvider extends ChangeNotifier {
           )
           .timeout(const Duration(seconds: 30));
 
-      // Log the incoming response
       debugPrint('⬅️ RESPONSE => STATUS: ${response.statusCode}');
       debugPrint('📦 BODY     => ${response.body}');
 
@@ -77,7 +85,6 @@ class SchedulesShiftsProvider extends ChangeNotifier {
         final welcomeResponse = schedulesShiftsWelcomeFromJson(response.body);
         _schedules = welcomeResponse.data;
       } else {
-        // Handle non-200 responses as errors
         String serverMsg = response.body;
         try {
           final Map<String, dynamic> jsonMap =
@@ -85,9 +92,7 @@ class SchedulesShiftsProvider extends ChangeNotifier {
           if (jsonMap['message'] != null) {
             serverMsg = jsonMap['message'].toString();
           }
-        } catch (_) {
-          // If parsing the error body fails, use the raw body.
-        }
+        } catch (_) {}
         throw Exception(
             'API Error (${response.statusCode}): Failed to load scheduled shifts. Server Message: "$serverMsg"');
       }
@@ -98,7 +103,6 @@ class SchedulesShiftsProvider extends ChangeNotifier {
       _errorMessage = 'Network error: Please check your internet connection.';
       debugPrint('❌ ERROR: ClientException occurred. $e');
     } catch (e) {
-      // Catch all other exceptions
       _errorMessage = e.toString();
       debugPrint('❌ ERROR: An unexpected exception occurred. Details: $e');
     } finally {
@@ -116,7 +120,6 @@ class SchedulesShiftsProvider extends ChangeNotifier {
   }
 
   Future<void> retry() async {
-    // The fetch method already handles state, just call it again.
     await fetchScheduledShifts();
   }
 }

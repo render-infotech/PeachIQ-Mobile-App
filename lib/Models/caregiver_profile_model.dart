@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:peach_iq/Models/caregiver_profile_model.dart';
+import 'package:peach_iq/Models/get_address_model.dart';
 
 CaregiverProfileResponse caregiverProfileResponseFromJson(String str) =>
     CaregiverProfileResponse.fromJson(json.decode(str));
@@ -61,8 +63,8 @@ class CaregiverDetails {
   final String? phone2;
   final String? phone2CountryCode;
   final String? phone2Code;
-  final String location; // <-- FIXED
-  final String about; // <-- FIXED
+  final String location;
+  final String about;
   final Country country;
   final StateDetails state;
   final City city;
@@ -82,8 +84,8 @@ class CaregiverDetails {
     this.phone2,
     this.phone2CountryCode,
     this.phone2Code,
-    required this.location, // <-- FIXED
-    required this.about, // <-- FIXED
+    required this.location,
+    required this.about,
     required this.country,
     required this.state,
     required this.city,
@@ -105,46 +107,12 @@ class CaregiverDetails {
         phone2: json["phone_2"],
         phone2CountryCode: json["phone_2_country_code"],
         phone2Code: json["phone_2_code"],
-        location: json["location"] ?? "", // <-- FIXED
-        about: json["about"] ?? "", // <-- FIXED
+        location: json["location"] ?? "",
+        about: json["about"] ?? "",
         country: Country.fromJson(json["country"]),
         state: StateDetails.fromJson(json["state"]),
         city: City.fromJson(json["city"]),
       );
 }
 
-class City {
-  final int id;
-  final String cityName;
-
-  City({required this.id, required this.cityName});
-
-  factory City.fromJson(Map<String, dynamic> json) => City(
-        id: json["id"],
-        cityName: json["city_name"] ?? "",
-      );
-}
-
-class Country {
-  final int id;
-  final String countryName;
-
-  Country({required this.id, required this.countryName});
-
-  factory Country.fromJson(Map<String, dynamic> json) => Country(
-        id: json["id"],
-        countryName: json["country_name"] ?? "",
-      );
-}
-
-class StateDetails {
-  final int id;
-  final String stateName;
-
-  StateDetails({required this.id, required this.stateName});
-
-  factory StateDetails.fromJson(Map<String, dynamic> json) => StateDetails(
-        id: json["id"],
-        stateName: json["state_name"] ?? "",
-      );
-}
+// DELETE THE City, Country, and StateDetails CLASSES FROM HERE
