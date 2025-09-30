@@ -499,7 +499,7 @@ class _AddressEditPopupState extends State<AddressEditPopup> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.AppSelectedGreen,
+                      backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),

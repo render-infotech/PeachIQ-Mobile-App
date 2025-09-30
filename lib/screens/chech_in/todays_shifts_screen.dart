@@ -52,7 +52,6 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
                         listen: false);
 
                 await profileProvider.logout();
-                // Assuming a 'clear' method exists on your provider to reset its state
                 scheduledShiftsProvider.clear();
 
                 if (!mounted) return;
@@ -85,7 +84,6 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Fetches all shifts, which now include the check-in status
       context.read<SchedulesShiftsProvider>().fetchScheduledShifts();
     });
   }
@@ -95,7 +93,7 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
   }
 
   String _formatShiftTime(DateTime start, DateTime end) {
-    final DateFormat format = DateFormat('ha'); // e.g., 8AM
+    final DateFormat format = DateFormat('h:mm a');
     return '${format.format(start)} to ${format.format(end)}';
   }
 
@@ -103,28 +101,27 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
     AppNavigator.toCheckIn(context, selectedShift);
   }
 
-  // UPDATED: Method to get status info based on check_in_status
   Map<String, dynamic> _getStatusInfo(int checkInStatus) {
     switch (checkInStatus) {
       case -1: // Not started/Incomplete
         return {
           'text': 'Incomplete',
-          'color': const Color(0xFFEF4444), // Red color for incomplete
+          'color': const Color(0xFFEF4444), // Red
         };
       case 0: // Checked in but not checked out
         return {
           'text': 'Pending',
-          'color': const Color(0xFFF97316), // Orange color for pending
+          'color': const Color(0xFFF97316), // Orange
         };
       case 1: // Complete (both checked in and out)
         return {
           'text': 'Complete',
-          'color': const Color(0xFF16A34A), // Green color for complete
+          'color': const Color(0xFF16A34A), // Green
         };
       default:
         return {
           'text': 'Unknown',
-          'color': const Color(0xFF6B7280), // Gray color for unknown
+          'color': const Color(0xFF6B7280), // Gray
         };
     }
   }
@@ -181,8 +178,10 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
                             dateTime: apiShift.start,
                             shiftTime:
                                 _formatShiftTime(apiShift.start, apiShift.end),
-                            checkInStatus: apiShift.checkInStatus ??
-                                -1, // Default to -1 if null
+                            checkInStatus: apiShift.checkInStatus ?? -1,
+                            // --- THIS IS THE UPDATE ---
+                            actualCheckIn: apiShift.actualCheckIn,
+                            actualCheckOut: apiShift.actualCheckOut,
                           ))
                       .toList()
                     ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
@@ -227,8 +226,6 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
                                         height: 1, indent: 16, endIndent: 16),
                                     itemBuilder: (context, index) {
                                       final s = todaysShifts[index];
-
-                                      // UPDATED: Use the new status logic
                                       final statusInfo =
                                           _getStatusInfo(s.checkInStatus);
                                       final Color statusColor =
@@ -236,13 +233,15 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
                                       final String statusText =
                                           statusInfo['text'];
 
+                                      final unitText = (s.floorWing.isNotEmpty)
+                                          ? '${s.floorWing} • '
+                                          : '';
+
                                       return ListTile(
                                         contentPadding:
                                             const EdgeInsets.symmetric(
                                                 horizontal: 16, vertical: 8),
                                         onTap: () => _onSelect(s),
-
-                                        // Status indicator
                                         leading: Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
@@ -275,7 +274,7 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
                                           ),
                                         ),
                                         subtitle: Text(
-                                          '${_formatDate(s.dateTime)}\n${s.floorWing ?? 'No unit assigned'} • ${s.shiftTime}',
+                                          '${_formatDate(s.dateTime)}\n$unitText${s.shiftTime}',
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w500,

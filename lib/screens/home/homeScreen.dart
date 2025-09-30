@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:peach_iq/Models/available_shifts_model.dart';
 import 'package:peach_iq/Providers/scheduled_shifts_provider.dart';
 import 'package:peach_iq/constants/loading/loading_provider.dart';
 import 'package:peach_iq/routes.dart';
@@ -24,27 +25,42 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late final AvailableShiftsProvider _availableShiftsProvider;
+  late final SchedulesShiftsProvider _scheduledShiftsProvider;
+
   @override
   void initState() {
     super.initState();
+
+    _availableShiftsProvider =
+        Provider.of<AvailableShiftsProvider>(context, listen: false);
+    _scheduledShiftsProvider =
+        Provider.of<SchedulesShiftsProvider>(context, listen: false);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAuthenticationAndFetchData();
+
+      _availableShiftsProvider.startAutoRefresh();
+      _scheduledShiftsProvider.startAutoRefresh();
     });
+  }
+
+  @override
+  void dispose() {
+    _availableShiftsProvider.stopAutoRefresh();
+    _scheduledShiftsProvider.stopAutoRefresh();
+
+    super.dispose();
   }
 
   Future<void> _checkAuthenticationAndFetchData() async {
     final loadingProvider =
         Provider.of<LoadingProvider>(context, listen: false);
-
     try {
       loadingProvider.setLoading(true);
 
       final profileProvider =
           Provider.of<ProfileProvider>(context, listen: false);
-      final availableShiftsProvider =
-          Provider.of<AvailableShiftsProvider>(context, listen: false);
-      final scheduledShiftsProvider =
-          Provider.of<SchedulesShiftsProvider>(context, listen: false);
       final workAnalysisProvider =
           Provider.of<WorkAnalysisProvider>(context, listen: false);
 
@@ -63,8 +79,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await Future.wait([
         profileProvider.fetchMyProfile(),
-        availableShiftsProvider.fetchAvailableShifts(),
-        scheduledShiftsProvider.fetchScheduledShifts(),
+        _availableShiftsProvider.fetchAvailableShifts(),
+        _scheduledShiftsProvider.fetchScheduledShifts(),
         workAnalysisProvider.fetchWorkAnalysis(),
       ]);
     } catch (e) {
@@ -91,14 +107,76 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _buildTimeLine(dynamic schedule) {
     try {
-      // We can safely assume start and end are not null here because of our provider's filter
       final startTime = DateFormat('h:mm a').format(schedule.start!);
       final endTime = DateFormat('h:mm a').format(schedule.end!);
       return '$startTime - $endTime';
     } catch (e) {
-      debugPrint('Error building time line: $e');
       return 'Time information unavailable';
     }
+  }
+
+  void _handleSignOut() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        title: const Text(
+          'Sign Out',
+          style: TextStyle(color: AppColors.black),
+        ),
+        content: const Text(
+          'Are you sure you want to sign out?',
+          style: TextStyle(color: AppColors.black),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                final profileProvider =
+                    Provider.of<ProfileProvider>(context, listen: false);
+                final workAnalysisProvider =
+                    Provider.of<WorkAnalysisProvider>(context, listen: false);
+
+                await profileProvider.logout();
+                _availableShiftsProvider.clear();
+                _scheduledShiftsProvider.clear();
+                workAnalysisProvider.clear();
+
+                if (mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginPage()),
+                    (route) => false,
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginPage()),
+                    (route) => false,
+                  );
+                }
+              }
+            },
+            child: const Text(
+              'Sign Out',
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -145,29 +223,33 @@ class _HomeScreenState extends State<HomeScreen> {
                                 padding: EdgeInsets.all(16.0),
                                 child: Center(
                                     child: Text(
-                                        ' could not load available shifts.')));
+                                        'Could not load available shifts.')));
                           }
-                          if (!shiftsProvider.hasSchedules) {
+                          List<AvailableShift> shiftsToShow = [];
+                          if (shiftsProvider.hasActionableSchedules) {
+                            shiftsToShow = shiftsProvider.actionableSchedules
+                                .take(2)
+                                .toList();
+                          } else if (shiftsProvider.allSchedules.isNotEmpty) {
+                            final sortedResponded =
+                                List.of(shiftsProvider.allSchedules);
+                            sortedResponded.sort(
+                                (a, b) => b.startDate.compareTo(a.startDate));
+                            shiftsToShow = sortedResponded.take(2).toList();
+                          }
+                          if (shiftsToShow.isEmpty) {
                             return const Padding(
-                                padding: EdgeInsets.all(16.0),
+                                padding: EdgeInsets.symmetric(vertical: 24.0),
                                 child: Center(
                                     child: Text(
-                                  'No available shifts right now.',
-                                  style: TextStyle(color: AppColors.black),
+                                  'No available shifts at the moment.',
+                                  style: TextStyle(color: Colors.grey),
                                 )));
                           }
-                          final shiftsToShow =
-                              shiftsProvider.schedules.take(2).toList();
                           return Column(
                             children: shiftsToShow.map((schedule) {
                               return AvailableShiftCard(
-                                name: schedule.name,
-                                dateLine: schedule.dateLine,
-                                timeLine: schedule.timeLine,
-                                notifyId: schedule.notifyId,
-                                role: schedule.role,
-                                shiftType: schedule.shiftType,
-                                unitArea: schedule.unitArea,
+                                shift: schedule,
                               );
                             }).toList(),
                           );
@@ -201,13 +283,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           return Column(
                             children: shiftsToShow.map((schedule) {
                               return ScheduleTile(
-                                // ✨ FIX: Provide a fallback value in case 'institution' is null
-                                facility:
-                                    schedule.institution ?? 'Facility N/A',
-                                // ✨ FIX: Provide a fallback value in case 'unitarea' is null
-                                // floorWing: schedule.unitarea ?? 'Area N/A',
-                                // We know 'start' is not null here because of the provider's filter.
-                                dateLine: _formatDate(schedule.start!),
+                                facility: schedule.institution,
+                                dateLine: _formatDate(schedule.start),
                                 time: _buildTimeLine(schedule),
                               );
                             }).toList(),
@@ -226,77 +303,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-  }
-
-  void _handleSignOut() {
-    showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-              backgroundColor: AppColors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              title: const Text(
-                'Sign Out',
-                style: TextStyle(color: AppColors.black),
-              ),
-              content: const Text(
-                'Are you sure you want to sign out?',
-                style: TextStyle(color: AppColors.black),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(color: AppColors.primary),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    try {
-                      final profileProvider =
-                          Provider.of<ProfileProvider>(context, listen: false);
-                      final availableShiftsProvider =
-                          Provider.of<AvailableShiftsProvider>(context,
-                              listen: false);
-                      final scheduledShiftsProvider =
-                          Provider.of<SchedulesShiftsProvider>(context,
-                              listen: false);
-                      final workAnalysisProvider =
-                          Provider.of<WorkAnalysisProvider>(context,
-                              listen: false);
-
-                      await profileProvider.logout();
-                      availableShiftsProvider.clear();
-                      scheduledShiftsProvider.clear();
-                      workAnalysisProvider.clear();
-
-                      if (mounted) {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                          (route) => false,
-                        );
-                      }
-                    } catch (e) {
-                      debugPrint('Error during sign out: $e');
-                      if (mounted) {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                          (route) => false,
-                        );
-                      }
-                    }
-                  },
-                  child: const Text(
-                    'Sign Out',
-                    style: TextStyle(color: AppColors.primary),
-                  ),
-                ),
-              ],
-            ));
   }
 }
 
@@ -410,7 +416,7 @@ class _AnalysisRow extends StatelessWidget {
                 ),
                 const SizedBox(width: 9),
                 card(
-                  '\$${analysisProvider.totalEarnings}',
+                  '\$${analysisProvider.totalEarnings.toStringAsFixed(2)}', // Assuming earnings should be formatted to 2 decimal places
                   'Total earnings',
                   fontSize: 20.0,
                 ),

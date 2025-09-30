@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:peach_iq/Models/checkin_checkout_model.dart';
 import 'package:peach_iq/models/shift_data_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:peach_iq/constants/api_utils.dart';
+import 'package:peach_iq/Providers/scheduled_shifts_provider.dart';
 
 class CheckInCheckOutProvider with ChangeNotifier {
   ShiftData? _activeShift;
@@ -24,6 +25,8 @@ class CheckInCheckOutProvider with ChangeNotifier {
     required int schedulingId,
     required String latitude,
     required String longitude,
+    required SchedulesShiftsProvider
+        schedulesProvider, // Parameter is correctly defined here
   }) async {
     return _handleCheckInOut(
       isCheckIn: true,
@@ -31,6 +34,7 @@ class CheckInCheckOutProvider with ChangeNotifier {
       schedulingId: schedulingId,
       latitude: latitude,
       longitude: longitude,
+      schedulesProvider: schedulesProvider,
     );
   }
 
@@ -38,6 +42,8 @@ class CheckInCheckOutProvider with ChangeNotifier {
     required int schedulingId,
     required String latitude,
     required String longitude,
+    required SchedulesShiftsProvider
+        schedulesProvider, // Parameter is correctly defined here
   }) async {
     return _handleCheckInOut(
       isCheckIn: false,
@@ -45,16 +51,17 @@ class CheckInCheckOutProvider with ChangeNotifier {
       schedulingId: schedulingId,
       latitude: latitude,
       longitude: longitude,
+      schedulesProvider: schedulesProvider,
     );
   }
 
-  // REVISED: Combined the logic for check-in and check-out to reduce duplication.
   Future<bool> _handleCheckInOut({
     required bool isCheckIn,
     required String url,
     required int schedulingId,
     required String latitude,
     required String longitude,
+    required SchedulesShiftsProvider schedulesProvider,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -68,13 +75,14 @@ class CheckInCheckOutProvider with ChangeNotifier {
         longitude: longitude,
       );
 
-      if (success && _activeShift != null) {
+      if (success) {
+        final now = DateTime.now();
         if (isCheckIn) {
-          debugPrint("✅ User checked in for schedulingId: $schedulingId");
-          _activeShift = _activeShift!.copyWith(actualCheckIn: DateTime.now());
+          schedulesProvider.updateShiftStatus(schedulingId, 0,
+              checkInTime: now);
         } else {
-          debugPrint("🔴 User checked out for schedulingId: $schedulingId");
-          _activeShift = _activeShift!.copyWith(actualCheckOut: DateTime.now());
+          schedulesProvider.updateShiftStatus(schedulingId, 1,
+              checkOutTime: now);
         }
       }
       return success;
@@ -95,9 +103,8 @@ class CheckInCheckOutProvider with ChangeNotifier {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
-
     if (token == null) {
-      throw Exception('Authentication token not found. Please log in again.');
+      throw Exception('Authentication token not found.');
     }
 
     final requestModel = CheckInOutRequest(

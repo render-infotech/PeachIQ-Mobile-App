@@ -103,7 +103,7 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
               builder: (context, p, _) => HeaderCard(
                 name: p.fullName,
                 subtitle: p.email.isNotEmpty ? p.email : null,
-                pageheader: 'All Monthly Shifts',
+                pageheader: 'All Scheduled Shifts',
                 onSignOut: () => _handleSignOut(context),
               ),
             ),

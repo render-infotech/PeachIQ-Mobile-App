@@ -145,7 +145,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.AppSelectedGreen,
+                      backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.white,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),

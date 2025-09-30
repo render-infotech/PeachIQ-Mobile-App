@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/screens/auth/login.dart';
 import 'package:geolocator/geolocator.dart';
+import 'dart:async';
+import 'package:peach_iq/Providers/scheduled_shifts_provider.dart';
 
 class CheckInScreen extends StatefulWidget {
   final ShiftData shift;
@@ -22,8 +24,6 @@ class _CheckInScreenState extends State<CheckInScreen> {
   DateTime? _checkOutTime;
   bool _isCheckingIn = false;
   bool _isCheckingOut = false;
-
-  // UPDATED: Track check-in status to persist across navigation
   int _currentCheckInStatus = -1;
 
   @override
@@ -33,16 +33,6 @@ class _CheckInScreenState extends State<CheckInScreen> {
     _checkInTime = widget.shift.actualCheckIn;
     _checkOutTime = widget.shift.actualCheckOut;
     _currentCheckInStatus = widget.shift.checkInStatus;
-
-    // UPDATED: Set initial times based on check-in status
-    if (_currentCheckInStatus == 0 || _currentCheckInStatus == 1) {
-      // If status is 0 (pending) or 1 (complete), user has checked in
-      _checkInTime = widget.shift.actualCheckIn ?? DateTime.now();
-    }
-    if (_currentCheckInStatus == 1) {
-      // If status is 1 (complete), user has also checked out
-      _checkOutTime = widget.shift.actualCheckOut ?? DateTime.now();
-    }
   }
 
   Future<Position?> _getCurrentLocation() async {
@@ -80,106 +70,113 @@ class _CheckInScreenState extends State<CheckInScreen> {
       return null;
     }
 
-    return await Geolocator.getCurrentPosition();
+    try {
+      return await Geolocator.getCurrentPosition(
+        timeLimit: const Duration(seconds: 10),
+        desiredAccuracy: LocationAccuracy.high,
+      );
+    } on TimeoutException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Could not get a location in time. Try again in an area with a clearer sky.'),
+        ));
+      }
+      return null;
+    }
   }
 
   Future<void> _handleCheckIn() async {
     setState(() => _isCheckingIn = true);
-    final provider = context.read<CheckInCheckOutProvider>();
-    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final checkInProvider = context.read<CheckInCheckOutProvider>();
+      final schedulesProvider =
+          context.read<SchedulesShiftsProvider>(); // Get the provider
+      final messenger = ScaffoldMessenger.of(context);
 
-    final position = await _getCurrentLocation();
-    if (position == null) {
-      setState(() => _isCheckingIn = false);
-      return;
-    }
+      final position = await _getCurrentLocation();
+      if (position == null) return;
 
-    debugPrint(
-        '📍 Location captured for Check-In: Lat: ${position.latitude}, Lng: ${position.longitude}');
+      final success = await checkInProvider.checkIn(
+        schedulingId: widget.shift.schedulingId,
+        latitude: position.latitude.toString(),
+        longitude: position.longitude.toString(),
+        schedulesProvider: schedulesProvider, // Pass the provider
+      );
 
-    final success = await provider.checkIn(
-      schedulingId: widget.shift.schedulingId,
-      latitude: position.latitude.toString(),
-      longitude: position.longitude.toString(),
-    );
-
-    if (mounted) {
-      if (success) {
-        // UPDATED: Update both time and status after successful check-in
-        setState(() {
-          _checkInTime = DateTime.now();
-          _currentCheckInStatus =
-              0; // Status becomes 0 (pending) after check-in
-        });
-        messenger.showSnackBar(
-          const SnackBar(
-              content: Text(
-                "Checked in successfully!",
-                style: TextStyle(color: AppColors.white),
-              ),
-              backgroundColor: Colors.green),
-        );
-      } else {
-        messenger.showSnackBar(
-          SnackBar(
-              content: Text(
-                provider.errorMessage ?? "Failed to check in.",
-                style: const TextStyle(color: AppColors.white),
-              ),
-              backgroundColor: Colors.red),
-        );
+      if (mounted) {
+        if (success) {
+          setState(() {
+            _checkInTime = DateTime.now();
+            _currentCheckInStatus = 0;
+          });
+          messenger.showSnackBar(
+            const SnackBar(
+                content: Text("Checked in successfully!",
+                    style: TextStyle(color: AppColors.white)),
+                backgroundColor: Colors.green),
+          );
+        } else {
+          messenger.showSnackBar(
+            SnackBar(
+                content: Text(
+                    checkInProvider.errorMessage ?? "Failed to check in.",
+                    style: const TextStyle(color: AppColors.white)),
+                backgroundColor: Colors.red),
+          );
+        }
       }
-      setState(() => _isCheckingIn = false);
+    } finally {
+      if (mounted) {
+        setState(() => _isCheckingIn = false);
+      }
     }
   }
 
   Future<void> _handleCheckOut() async {
     setState(() => _isCheckingOut = true);
-    final provider = context.read<CheckInCheckOutProvider>();
-    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final checkInProvider = context.read<CheckInCheckOutProvider>();
+      final schedulesProvider =
+          context.read<SchedulesShiftsProvider>(); // Get the provider
+      final messenger = ScaffoldMessenger.of(context);
 
-    final position = await _getCurrentLocation();
-    if (position == null) {
-      setState(() => _isCheckingOut = false);
-      return;
-    }
+      final position = await _getCurrentLocation();
+      if (position == null) return;
 
-    debugPrint(
-        '📍 Location captured for Check-Out: Lat: ${position.latitude}, Lng: ${position.longitude}');
+      final success = await checkInProvider.checkOut(
+        schedulingId: widget.shift.schedulingId,
+        latitude: position.latitude.toString(),
+        longitude: position.longitude.toString(),
+        schedulesProvider: schedulesProvider, // Pass the provider
+      );
 
-    final success = await provider.checkOut(
-      schedulingId: widget.shift.schedulingId,
-      latitude: position.latitude.toString(),
-      longitude: position.longitude.toString(),
-    );
-
-    if (mounted) {
-      if (success) {
-        // UPDATED: Update both time and status after successful check-out
-        setState(() {
-          _checkOutTime = DateTime.now();
-          _currentCheckInStatus =
-              1; // Status becomes 1 (complete) after check-out
-        });
-        messenger.showSnackBar(
-          const SnackBar(
-              content: Text(
-                "Checked out successfully!",
-                style: TextStyle(color: AppColors.white),
-              ),
-              backgroundColor: Colors.green),
-        );
-      } else {
-        messenger.showSnackBar(
-          SnackBar(
-              content: Text(
-                provider.errorMessage ?? "Failed to check out.",
-                style: const TextStyle(color: AppColors.white),
-              ),
-              backgroundColor: Colors.red),
-        );
+      if (mounted) {
+        if (success) {
+          setState(() {
+            _checkOutTime = DateTime.now();
+            _currentCheckInStatus = 1;
+          });
+          messenger.showSnackBar(
+            const SnackBar(
+                content: Text("Checked out successfully!",
+                    style: TextStyle(color: AppColors.white)),
+                backgroundColor: Colors.green),
+          );
+        } else {
+          messenger.showSnackBar(
+            SnackBar(
+                content: Text(
+                    checkInProvider.errorMessage ?? "Failed to check out.",
+                    style: const TextStyle(color: AppColors.white)),
+                backgroundColor: Colors.red),
+          );
+        }
       }
-      setState(() => _isCheckingOut = false);
+    } finally {
+      if (mounted) {
+        setState(() => _isCheckingOut = false);
+      }
     }
   }
 
@@ -191,21 +188,15 @@ class _CheckInScreenState extends State<CheckInScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
               ),
-              title: const Text(
-                'Sign Out',
-                style: TextStyle(color: AppColors.black),
-              ),
-              content: const Text(
-                'Are you sure you want to sign out?',
-                style: TextStyle(color: AppColors.black),
-              ),
+              title: const Text('Sign Out',
+                  style: TextStyle(color: AppColors.black)),
+              content: const Text('Are you sure you want to sign out?',
+                  style: TextStyle(color: AppColors.black)),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(color: AppColors.primary),
-                  ),
+                  child: const Text('Cancel',
+                      style: TextStyle(color: AppColors.primary)),
                 ),
                 TextButton(
                   onPressed: () async {
@@ -221,10 +212,8 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       );
                     }
                   },
-                  child: const Text(
-                    'Sign Out',
-                    style: TextStyle(color: AppColors.primary),
-                  ),
+                  child: const Text('Sign Out',
+                      style: TextStyle(color: AppColors.primary)),
                 ),
               ],
             ));
@@ -282,14 +271,15 @@ class _CheckInScreenState extends State<CheckInScreen> {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          Text(
-                            widget.shift.floorWing ?? 'No unit assigned',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF475569),
+                          if (widget.shift.floorWing.isNotEmpty)
+                            Text(
+                              widget.shift.floorWing,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF475569),
+                              ),
                             ),
-                          ),
                           const SizedBox(height: 12),
                           _buildInfoRow(
                               icon: Icons.calendar_today_outlined,
@@ -306,8 +296,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       shift: widget.shift,
                       checkInTime: _checkInTime,
                       checkOutTime: _checkOutTime,
-                      currentStatus:
-                          _currentCheckInStatus, // UPDATED: Pass current status
+                      currentStatus: _currentCheckInStatus,
                       isCheckingIn: _isCheckingIn,
                       isCheckingOut: _isCheckingOut,
                       onCheckIn: _handleCheckIn,
@@ -355,7 +344,7 @@ class _ModernCheckActionsCard extends StatelessWidget {
     required this.shift,
     this.checkInTime,
     this.checkOutTime,
-    required this.currentStatus, // UPDATED: Required parameter
+    required this.currentStatus,
     required this.isCheckingIn,
     required this.isCheckingOut,
     required this.onCheckIn,
@@ -364,10 +353,8 @@ class _ModernCheckActionsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // UPDATED: Use currentStatus instead of just checking times
-    final bool hasCheckedIn = currentStatus == 0 ||
-        currentStatus == 1; // Status 0 (pending) or 1 (complete)
-    final bool hasCheckedOut = currentStatus == 1; // Status 1 (complete)
+    final bool hasCheckedIn = currentStatus == 0 || currentStatus == 1;
+    final bool hasCheckedOut = currentStatus == 1;
 
     return Container(
       decoration: BoxDecoration(
@@ -392,7 +379,6 @@ class _ModernCheckActionsCard extends StatelessWidget {
             statusColor: hasCheckedIn ? Colors.grey : const Color(0xFF10B981),
             buttonColor: const Color(0xFFF36856),
             buttonText: 'Check In Now',
-            // UPDATED: Button is disabled if already checked in
             isDisabled: hasCheckedIn,
             isLoading: isCheckingIn,
             onTap: onCheckIn,
@@ -427,7 +413,6 @@ class _ModernCheckActionsCard extends StatelessWidget {
                     : const Color(0xFFF59E0B)),
             buttonColor: AppColors.primary,
             buttonText: 'Check Out',
-            // UPDATED: Button is disabled if not checked in yet OR already checked out
             isDisabled: !hasCheckedIn || hasCheckedOut,
             isLoading: isCheckingOut,
             onTap: onCheckOut,
