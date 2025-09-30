@@ -1,4 +1,3 @@
-// lib/screens/schedule/schedule_page.dart
 import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -53,8 +52,6 @@ class _SchedulePageState extends State<SchedulePage> {
                         Provider.of<ProfileProvider>(context, listen: false);
                     await profileProvider.logout();
 
-                    // The 'mounted' check is important to prevent errors
-                    // if the widget is removed from the tree before the async operation completes.
                     if (mounted) {
                       Navigator.pushAndRemoveUntil(
                         context,
@@ -93,7 +90,8 @@ class _SchedulePageState extends State<SchedulePage> {
         (shift) => shift.start == appt.startTime,
       );
     } catch (e) {
-      print("Error: Could not find the selected shift in the provider. $e");
+      debugPrint(
+          "Error: Could not find the selected shift in the provider. $e");
       return;
     }
 
@@ -106,6 +104,7 @@ class _SchedulePageState extends State<SchedulePage> {
     final String shiftHours =
         '${(fullShiftDetails.end.difference(fullShiftDetails.start).inMinutes / 60).toStringAsFixed(1)} Hours';
 
+    // This field is not currently used, remains null
     final String? additionalInfo = null;
 
     _showShiftDetailsSheet(
@@ -160,8 +159,6 @@ class _SchedulePageState extends State<SchedulePage> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          // This physics property will prevent the main page from scrolling if it's not needed,
-          // but the GestureDetector below is the primary fix for the calendar.
           physics: const ClampingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -178,7 +175,6 @@ class _SchedulePageState extends State<SchedulePage> {
               Container(
                 height: 560,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                // REVISED: Added GestureDetector here to stop horizontal swipes from affecting the parent page.
                 child: GestureDetector(
                   onHorizontalDragStart: (details) {},
                   onHorizontalDragUpdate: (details) {},
@@ -382,8 +378,10 @@ class _ShiftDetailsSheet extends StatelessWidget {
                     children: [
                       _buildDetailRow('LOCATION:', location),
                       const SizedBox(height: 8),
-                      _buildDetailRow('UNIT/BLDG/WING:', unit),
-                      const SizedBox(height: 8),
+                      if (unit.isNotEmpty) ...[
+                        _buildDetailRow('UNIT/BLDG/WING:', unit),
+                        const SizedBox(height: 8),
+                      ],
                       _buildDetailRow('SHIFT TIME:', shiftTime),
                       const SizedBox(height: 8),
                       _buildDetailRow('SHIFT HOURS:', shiftHours),

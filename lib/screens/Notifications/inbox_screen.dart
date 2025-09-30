@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/screens/auth/login.dart';
 
-// Converted to a StatefulWidget
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
 
@@ -35,8 +34,7 @@ class _InboxScreenState extends State<InboxScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(
-                dialogContext), // Use dialogContext to pop the dialog
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text(
               'Cancel',
               style: TextStyle(color: AppColors.primary),
@@ -48,11 +46,10 @@ class _InboxScreenState extends State<InboxScreen> {
                   Provider.of<ProfileProvider>(context, listen: false);
               await profileProvider.logout();
 
-              // This check now works correctly because we are in a State object.
               if (!mounted) return;
 
               Navigator.pushAndRemoveUntil(
-                context, // Use the original context for navigation
+                context,
                 MaterialPageRoute(builder: (_) => const LoginPage()),
                 (route) => false,
               );
@@ -84,7 +81,6 @@ class _InboxScreenState extends State<InboxScreen> {
                   onSignOut: () => _handleSignOut(context),
                 ),
               ),
-
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -94,16 +90,12 @@ class _InboxScreenState extends State<InboxScreen> {
                       vertical: 8,
                     ),
                   ),
-
-                  // Reusable styled TabBar (left-aligned)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: const InboxTabs(),
                   ),
                 ],
               ),
-
-              // Reserve remaining space for future content
             ],
           ),
         ),

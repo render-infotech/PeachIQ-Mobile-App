@@ -204,7 +204,6 @@ class AppRouter {
           builder: (_) => const AppShell(
               initialIndex: 4, child: TermsAndConditionsScreen()),
         );
-      // Add new route case
       case AppRoutes.documentUpload:
         return MaterialPageRoute(
           builder: (_) =>
