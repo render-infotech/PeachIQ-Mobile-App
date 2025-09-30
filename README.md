@@ -1,16 +1,20 @@
-# peach_iq
+**Peach IQ**
 
-A new Flutter project.
+A comprehensive mobile application built with Flutter, designed to streamline work management for professional caregivers.
 
-## Getting Started
+**About The Project**
 
-This project is a starting point for a Flutter application.
+Peach IQ is a robust mobile solution engineered to empower caregivers by simplifying the complexities of their daily work life. The application provides a centralized platform for managing work schedules, tracking performance analytics, and maintaining a detailed professional profile.
 
-A few resources to get you started if this is your first Flutter project:
+By leveraging a secure, token-based authentication system and a dedicated API, Peach IQ ensures that caregivers have reliable, on-the-go access to critical job-related information, helping them stay organized and focused on providing excellent care.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+**Key Features**
+Shift Management: View and manage both available and scheduled work shifts, with detailed information for each assignment.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Work Analytics: Track key performance metrics through a dedicated "Work Analysis" dashboard, including total shifts, hours worked, and earnings for a given period.
+
+Profile Management: Maintain a complete user profile with up-to-date personal and contact information, including a dynamic, multi-level address system (Country/State/City).
+
+Secure Authentication: Ensures user data is protected with a secure login and session management system.
+
+Dynamic Data: The entire application is driven by a backend API, ensuring all information is current and synchronized.
