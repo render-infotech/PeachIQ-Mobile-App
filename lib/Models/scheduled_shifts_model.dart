@@ -34,6 +34,9 @@ class ScheduledShift {
   String workShift;
   String unitarea;
   int? checkInStatus;
+  // --- ADDED THESE FIELDS ---
+  DateTime? actualCheckIn;
+  DateTime? actualCheckOut;
 
   ScheduledShift({
     required this.start,
@@ -44,6 +47,9 @@ class ScheduledShift {
     required this.workShift,
     required this.unitarea,
     this.checkInStatus,
+    // --- ADDED TO CONSTRUCTOR ---
+    this.actualCheckIn,
+    this.actualCheckOut,
   });
 
   factory ScheduledShift.fromJson(Map<String, dynamic> json) => ScheduledShift(
@@ -54,7 +60,14 @@ class ScheduledShift {
             (json["institution"] as String?)?.trim() ?? "Unknown Facility",
         category: json["category"] ?? "Unknown Role",
         workShift: json["work_shift"] ?? "Unknown Shift",
-        unitarea: json["unitarea"] ?? "N/A",
+        unitarea: json["unitarea"] ?? "",
         checkInStatus: json["check_in_status"],
+        // --- ADDED PARSING LOGIC (handles nulls) ---
+        actualCheckIn: json["actual_check_in"] == null
+            ? null
+            : DateTime.parse(json["actual_check_in"]),
+        actualCheckOut: json["actual_check_out"] == null
+            ? null
+            : DateTime.parse(json["actual_check_out"]),
       );
 }

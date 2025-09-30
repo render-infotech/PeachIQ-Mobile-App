@@ -1,9 +1,6 @@
-// lib/models/available_shift_model.dart
-
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
-// Helper function to easily decode the entire JSON response
 AvailableShiftsResponse availableShiftsResponseFromJson(String str) =>
     AvailableShiftsResponse.fromJson(json.decode(str));
 
@@ -32,8 +29,11 @@ class AvailableShiftsResponse {
 class AvailableShift {
   final int id;
   final int notifyId;
+  int caregiverDecision; // Made non-final for optimistic updates
   final String displayInstitutionName;
   final DateTime startDate;
+  final DateTime? endDate;
+  final String schedulingType;
   final String displayTimeshift;
   final String displayWorkshift;
   final Category category;
@@ -42,67 +42,68 @@ class AvailableShift {
   AvailableShift({
     required this.id,
     required this.notifyId,
+    required this.caregiverDecision,
     required this.displayInstitutionName,
     required this.startDate,
+    this.endDate,
+    required this.schedulingType,
     required this.displayTimeshift,
     required this.displayWorkshift,
     required this.category,
     this.unitarea,
   });
 
-  // --- GETTERS FOR THE UI WIDGET ---
-  // These getters provide the exact strings your AvailableShiftCard needs.
-
-  /// The institution name. E.g., "ABS Hospital"
   String get name => displayInstitutionName.trim();
-
-  /// Formatted time range. E.g., "06:00 AM - 02:00 PM"
   String get timeLine => displayTimeshift;
-
-  /// The job category. E.g., "PSW" or "RN"
   String get role => category.jobCategory;
-
-  /// The type of shift. E.g., "Floor Shift"
   String get shiftType => displayWorkshift;
-
-  /// The unit area name. Returns "N/A" if null.
   String get unitArea => unitarea?.unitareaName ?? "N/A";
 
-  /// Formats the date into the format "Tuesday 16th September".
   String get dateLine {
-    // Helper function to get the 'st', 'nd', 'rd', 'th' suffix for the day
-    String getDaySuffix(int day) {
-      if (day >= 11 && day <= 13) {
-        return 'th';
-      }
+    String getDayWithSuffix(DateTime date) {
+      final day = date.day;
+      if (day >= 11 && day <= 13) return "${day}th";
       switch (day % 10) {
         case 1:
-          return 'st';
+          return "${day}st";
         case 2:
-          return 'nd';
+          return "${day}nd";
         case 3:
-          return 'rd';
+          return "${day}rd";
         default:
-          return 'th';
+          return "${day}th";
       }
     }
 
-    final day = startDate.day;
-    final suffix = getDaySuffix(day);
-    // Creates the format: "Weekday Day<suffix> Month" e.g., "Tuesday 16th September"
-    return DateFormat("EEEE d'$suffix' MMMM").format(startDate);
+    final end = endDate ?? startDate;
+    final isSingleDay = startDate.year == end.year &&
+        startDate.month == end.month &&
+        startDate.day == end.day;
+
+    if (isSingleDay || schedulingType == "Once") {
+      return "${DateFormat("EEEE, MMMM").format(startDate)} ${getDayWithSuffix(startDate)}";
+    } else {
+      final startFormatted =
+          "${DateFormat("MMMM").format(startDate)} ${getDayWithSuffix(startDate)}";
+      final endFormatted =
+          "${DateFormat("MMMM").format(end)} ${getDayWithSuffix(end)}";
+      return "$startFormatted - $endFormatted, ${end.year}";
+    }
   }
-  // ------------------------------------
 
   factory AvailableShift.fromJson(Map<String, dynamic> json) => AvailableShift(
         id: json["id"] ?? 0,
         notifyId: json["notify_id"] ?? 0,
+        caregiverDecision: json["caregiver_decision"] ?? 0,
         displayInstitutionName:
             json["display_institution_name"] ?? "Unknown Institution",
-        // Safely parse the date string into a DateTime object
         startDate: json["start_date"] != null
             ? DateTime.tryParse(json["start_date"]) ?? DateTime.now()
             : DateTime.now(),
+        endDate: json["end_date"] != null
+            ? DateTime.tryParse(json["end_date"])
+            : null,
+        schedulingType: json["scheduling_type"] ?? "Once",
         displayTimeshift: json["display_timeshift"] ?? "N/A",
         displayWorkshift: json["display_workshift"] ?? "N/A",
         category: Category.fromJson(json["category"] ?? {}),
@@ -117,11 +118,8 @@ class Category {
   final String jobCategory;
   final String colorCode;
 
-  Category({
-    required this.id,
-    required this.jobCategory,
-    required this.colorCode,
-  });
+  Category(
+      {required this.id, required this.jobCategory, required this.colorCode});
 
   factory Category.fromJson(Map<String, dynamic> json) => Category(
         id: json["id"] ?? 0,
@@ -135,11 +133,10 @@ class UnitArea {
   final String unitareaName;
   final String description;
 
-  UnitArea({
-    required this.id,
-    required this.unitareaName,
-    required this.description,
-  });
+  UnitArea(
+      {required this.id,
+      required this.unitareaName,
+      required this.description});
 
   factory UnitArea.fromJson(Map<String, dynamic> json) => UnitArea(
         id: json["id"] ?? 0,
