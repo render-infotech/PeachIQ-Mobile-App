@@ -8,7 +8,6 @@ import 'package:peach_iq/widgets/custom_pop_up.dart';
 import 'package:provider/provider.dart';
 
 class AvailableShiftCard extends StatefulWidget {
-  // Switched back to a StatefulWidget to manage state as per your original file
   final AvailableShift shift;
 
   const AvailableShiftCard({
@@ -22,6 +21,7 @@ class AvailableShiftCard extends StatefulWidget {
 
 class _AvailableShiftCardState extends State<AvailableShiftCard> {
   bool _isResponding = false;
+  bool _isDismissed = false;
 
   (String, String, String) _splitOrdinal(String input) {
     final parts = input.split(' ');
@@ -37,28 +37,113 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
     return ('$before $day', suf, ' $after');
   }
 
-  void _showInterestConfirmation() {
-    Navigator.of(context).pop();
+  void _showSnackbar(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.redAccent : Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showInterestConfirmationDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Interest Confirmed!'),
-          content: const Text(
-            'Shifts are assigned on a first-come, first-serve basis. We will notify you once your shift has been assigned.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                _respondToShift(1);
-              },
-              child: const Text('Got It!'),
+        return Dialog(
+          backgroundColor: AppColors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Interest Confirmed!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.black,
+                    fontFamily: 'Manrope',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Thank you for your interest. Shifts are assigned on a first-come, first-serve basis. We will notify you once your shift has been assigned.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.black,
+                    fontFamily: 'Manrope',
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      _respondToShift(1);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text(
+                      'Got it!',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Manrope',
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                )
+              ],
             ),
-          ],
+          ),
         );
       },
+    );
+  }
+
+  void _showNotInterestedConfirmation() {
+    showAppPopup(
+      context,
+      title: 'Confirm Action',
+      message: 'Are you sure you are not interested in this shift?',
+      primaryText: 'Cancel',
+      onPrimary: () => Navigator.of(context).pop(),
+      secondaryText: 'Yes',
+      onSecondary: () {
+        Navigator.of(context).pop();
+        _respondToShift(-1);
+      },
+      showClose: false,
+      barrierDismissible: false,
     );
   }
 
@@ -66,17 +151,34 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
     if (!mounted) return;
     setState(() => _isResponding = true);
 
-    final responseProvider = context.read<ShiftResponseProvider>();
-    final shiftsProvider = context.read<AvailableShiftsProvider>();
+    try {
+      final responseProvider = context.read<ShiftResponseProvider>();
+      final shiftsProvider = context.read<AvailableShiftsProvider>();
 
-    await responseProvider.respondToShift(
-      notifyId: widget.shift.notifyId,
-      status: status,
-      shiftsProvider: shiftsProvider,
-    );
+      await responseProvider.respondToShift(
+        notifyId: widget.shift.notifyId,
+        status: status,
+        shiftsProvider: shiftsProvider,
+      );
 
-    if (mounted) {
-      setState(() => _isResponding = false);
+      if (mounted) {
+        if (status == -1) {
+          setState(() => _isDismissed = true);
+        }
+
+        final message = status == 1
+            ? 'Your interest has been submitted successfully.'
+            : 'Shift has been dismissed.';
+        _showSnackbar(message);
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackbar('An error occurred. Please try again.', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isResponding = false);
+      }
     }
   }
 
@@ -91,37 +193,38 @@ Unit Area: ${widget.shift.unitArea}''',
       primaryText: 'Not Interested',
       onPrimary: () {
         Navigator.of(context).pop();
-        _respondToShift(-1);
+        _showNotInterestedConfirmation();
       },
       secondaryText: 'Interested',
-      onSecondary: _showInterestConfirmation,
+      onSecondary: () {
+        Navigator.of(context).pop();
+        _showInterestConfirmationDialog();
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final split = _splitOrdinal(widget.shift.dateLine);
+    if (widget.shift.caregiverDecision == -1 || _isDismissed) {
+      return const SizedBox.shrink();
+    }
 
+    final split = _splitOrdinal(widget.shift.dateLine);
     final bool isActionable = widget.shift.caregiverDecision == 0;
     final bool hasRespondedInterested = widget.shift.caregiverDecision == 1;
-    final bool hasRespondedNotInterested = widget.shift.caregiverDecision == -1;
 
     String buttonText;
     Color buttonColor;
     bool isEnabled = isActionable && !_isResponding;
 
     if (hasRespondedInterested) {
-      buttonText = 'Interested';
-      buttonColor = AppColors.primary.withOpacity(.6);
-    } else if (hasRespondedNotInterested) {
-      buttonText = 'Not interested';
+      buttonText = 'Pending';
       buttonColor = AppColors.primary.withOpacity(.6);
     } else {
       buttonText = 'Respond';
       buttonColor = AppColors.primary;
     }
 
-    // This is your exact original UI structure
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.all(12),
@@ -177,6 +280,7 @@ Unit Area: ${widget.shift.unitArea}''',
                                       style: const TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
+                                        color: AppColors.black,
                                       ),
                                     ),
                                   ),
@@ -208,7 +312,6 @@ Unit Area: ${widget.shift.unitArea}''',
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // Your original flexible button container
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
