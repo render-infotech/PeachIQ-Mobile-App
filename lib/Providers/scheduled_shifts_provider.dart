@@ -86,8 +86,6 @@ class SchedulesShiftsProvider extends ChangeNotifier {
     }
   }
 
-  // --- ADD THIS NEW METHOD ---
-  /// Finds a shift by its ID and updates its status and times.
   void updateShiftStatus(int schedulingId, int newStatus,
       {DateTime? checkInTime, DateTime? checkOutTime}) {
     try {
