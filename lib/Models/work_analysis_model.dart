@@ -166,11 +166,13 @@ class Schedule {
   String payHours;
   DateTime scheduleStart;
   int estimatedPay;
+  String timeShift; // Added for time-based hour calculation
 
   Schedule({
     required this.payHours,
     required this.scheduleStart,
     required this.estimatedPay,
+    required this.timeShift,
   });
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
@@ -184,6 +186,7 @@ class Schedule {
       scheduleStart:
           dateString != null ? DateTime.parse(dateString) : fallbackDate,
       estimatedPay: (payValue as num?)?.toInt() ?? 0,
+      timeShift: json["time_shift"] ?? "Time not available",
     );
   }
 }

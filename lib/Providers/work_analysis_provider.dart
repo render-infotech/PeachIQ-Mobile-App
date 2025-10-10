@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:peach_iq/Models/work_analysis_model.dart';
 import 'package:peach_iq/constants/api_utils.dart';
+import 'package:intl/intl.dart';
 
 class WorkAnalysisProvider extends ChangeNotifier {
   bool _isLoading = false;
@@ -36,9 +37,42 @@ class WorkAnalysisProvider extends ChangeNotifier {
     }).toList();
 
     for (var schedule in monthToDateSchedules) {
-      total += double.tryParse(schedule.payHours) ?? 0.0;
+      total += _calculateHoursFromTimeShift(schedule.timeShift);
     }
     return total;
+  }
+
+  // Helper method to calculate hours from time_shift string
+  double _calculateHoursFromTimeShift(String timeShift) {
+    try {
+      // Split the time range: "04:30 PM - 01:20 AM"
+      final parts = timeShift.split(' - ');
+      if (parts.length != 2) return 0.0;
+
+      final startTimeStr = parts[0].trim(); // "04:30 PM"
+      final endTimeStr = parts[1].trim(); // "01:20 AM"
+
+      // Parse start and end times using DateFormat
+      final formatter = DateFormat('h:mm a');
+      final startTime = formatter.parse(startTimeStr);
+      final endTime = formatter.parse(endTimeStr);
+
+      // Handle overnight shifts (end time is next day)
+      DateTime adjustedEndTime = endTime;
+      if (endTime.isBefore(startTime) || endTime.isAtSameMomentAs(startTime)) {
+        // Add 24 hours for overnight shifts
+        adjustedEndTime = endTime.add(const Duration(days: 1));
+      }
+
+      // Calculate duration in hours
+      final duration = adjustedEndTime.difference(startTime);
+      final hours = duration.inMinutes / 60.0;
+
+      return hours;
+    } catch (e) {
+      debugPrint('Error parsing time shift "$timeShift": $e');
+      return 0.0;
+    }
   }
 
   Future<void> fetchWorkAnalysis() async {

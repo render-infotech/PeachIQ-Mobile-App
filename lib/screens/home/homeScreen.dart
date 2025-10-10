@@ -244,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Center(
                                     child: Text(
                                   'No available shifts at the moment.',
-                                  style: TextStyle(color: Colors.grey),
+                                  style: TextStyle(color: AppColors.black),
                                 )));
                           }
                           return Column(
