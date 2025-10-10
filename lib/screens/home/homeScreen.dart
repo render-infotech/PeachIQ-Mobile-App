@@ -107,9 +107,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _buildTimeLine(dynamic schedule) {
     try {
-      final startTime = DateFormat('h:mm a').format(schedule.start!);
-      final endTime = DateFormat('h:mm a').format(schedule.end!);
-      return '$startTime - $endTime';
+      // Use the pre-formatted time from API instead of hardcoded DateFormat
+      return schedule.timeShift ?? 'Time information unavailable';
     } catch (e) {
       return 'Time information unavailable';
     }
@@ -227,14 +226,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           }
                           List<AvailableShift> shiftsToShow = [];
                           if (shiftsProvider.hasActionableSchedules) {
-                            shiftsToShow = shiftsProvider.actionableSchedules
-                                .take(2)
-                                .toList();
+                            final sortedActionable =
+                                List.of(shiftsProvider.actionableSchedules);
+                            sortedActionable.sort(
+                                (a, b) => a.startDate.compareTo(b.startDate));
+                            shiftsToShow = sortedActionable.take(2).toList();
                           } else if (shiftsProvider.allSchedules.isNotEmpty) {
                             final sortedResponded =
                                 List.of(shiftsProvider.allSchedules);
                             sortedResponded.sort(
-                                (a, b) => b.startDate.compareTo(a.startDate));
+                                (a, b) => a.startDate.compareTo(b.startDate));
                             shiftsToShow = sortedResponded.take(2).toList();
                           }
                           if (shiftsToShow.isEmpty) {

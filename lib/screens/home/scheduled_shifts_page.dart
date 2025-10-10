@@ -148,7 +148,6 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
                     itemCount: shiftsToDisplay.length,
                     itemBuilder: (context, index) {
                       final shift = shiftsToDisplay[index];
-                      final timeFormat = DateFormat('h:mm a');
 
                       return ScheduleTile(
                         facility: shift.institution,
@@ -156,7 +155,7 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
                         dateLine:
                             DateFormat("MMMM d, EEEE").format(shift.start),
                         time:
-                            '${timeFormat.format(shift.start)} to ${timeFormat.format(shift.end)}',
+                            shift.timeShift, // Use pre-formatted time from API
                         isSelected: index == selectedShiftIndex,
                         onTap: () {
                           setState(() {
@@ -200,8 +199,8 @@ class _ShiftDetailsSheet extends StatelessWidget {
     }
   }
 
-  String _formatShiftTimeRange(DateTime start, DateTime end) {
-    return '${_timeFormat.format(start)} to ${_timeFormat.format(end)}';
+  String _formatShiftTimeRange(ScheduledShift shift) {
+    return shift.timeShift; // Use pre-formatted time from API
   }
 
   Widget _buildFormattedDate(DateTime date) {
@@ -325,7 +324,7 @@ class _ShiftDetailsSheet extends StatelessWidget {
                   const SizedBox(height: 8),
                   _buildDetailRow(
                     'SHIFT TIME:',
-                    _formatShiftTimeRange(shift.start, shift.end),
+                    _formatShiftTimeRange(shift),
                   ),
                   const SizedBox(height: 8),
                   _buildDetailRow(

@@ -105,8 +105,8 @@ class _AvailableShiftsState extends State<AvailableShifts> {
                       return aGroup.compareTo(bGroup); // Sort by group
                     }
 
-                    // Within each group, sort by most recent start date
-                    return b.startDate.compareTo(a.startDate);
+                    // Within each group, sort by earliest start date (ascending)
+                    return a.startDate.compareTo(b.startDate);
                   });
                   // --- END OF SORTING LOGIC ---
 

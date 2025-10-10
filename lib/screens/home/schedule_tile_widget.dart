@@ -82,13 +82,9 @@ class ScheduleTile extends StatelessWidget {
                       color: AppColors.black,
                     ),
                   ),
-                  // const SizedBox(height: 6),
-
-                  // UPDATED: Replaced the Row with a Column for a vertical layout.
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Date Line (unchanged, but now the first item in the Column)
                       split.$2.isEmpty
                           ? Text(
                               dateLine,
@@ -128,11 +124,7 @@ class ScheduleTile extends StatelessWidget {
                                 ],
                               ),
                             ),
-
-                      // ADDED: Spacing between the date and time
                       const SizedBox(height: 4),
-
-                      // Time Line (now the second item in the Column)
                       Row(
                         children: [
                           Builder(

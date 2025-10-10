@@ -32,6 +32,7 @@ class ScheduledShift {
   String institution;
   String category;
   String workShift;
+  String timeShift; // Pre-formatted time from API like "04:00 PM - 12:00 AM"
   String unitarea;
   int? checkInStatus;
   // --- ADDED THESE FIELDS ---
@@ -45,6 +46,7 @@ class ScheduledShift {
     required this.institution,
     required this.category,
     required this.workShift,
+    required this.timeShift,
     required this.unitarea,
     this.checkInStatus,
     // --- ADDED TO CONSTRUCTOR ---
@@ -60,6 +62,7 @@ class ScheduledShift {
             (json["institution"] as String?)?.trim() ?? "Unknown Facility",
         category: json["category"] ?? "Unknown Role",
         workShift: json["work_shift"] ?? "Unknown Shift",
+        timeShift: json["time_shift"] ?? "Time not available",
         unitarea: json["unitarea"] ?? "",
         checkInStatus: json["check_in_status"],
         // --- ADDED PARSING LOGIC (handles nulls) ---
