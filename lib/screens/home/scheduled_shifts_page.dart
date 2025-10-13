@@ -99,13 +99,26 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Consumer<ProfileProvider>(
-              builder: (context, p, _) => HeaderCard(
-                name: p.fullName,
-                subtitle: p.email.isNotEmpty ? p.email : null,
-                pageheader: 'All Scheduled Shifts',
-                onSignOut: () => _handleSignOut(context),
-              ),
+            Stack(
+              children: [
+                Consumer<ProfileProvider>(
+                  builder: (context, p, _) => HeaderCard(
+                    name: p.fullName,
+                    subtitle: p.email.isNotEmpty ? p.email : null,
+                    pageheader: '       All Scheduled Shifts',
+                    onSignOut: () => _handleSignOut(context),
+                  ),
+                ),
+                Positioned(
+                  left: 4,
+                  bottom: 3,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios,
+                        color: AppColors.white, size: 22),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
             Expanded(

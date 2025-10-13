@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
@@ -179,7 +181,6 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
                             shiftTime:
                                 _formatShiftTime(apiShift.start, apiShift.end),
                             checkInStatus: apiShift.checkInStatus ?? -1,
-                            // --- THIS IS THE UPDATE ---
                             actualCheckIn: apiShift.actualCheckIn,
                             actualCheckOut: apiShift.actualCheckOut,
                           ))
@@ -194,8 +195,8 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 50),
                             child: const Text(
                               'No shifts scheduled for today.',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.grey),
+                              style: TextStyle(
+                                  fontSize: 16, color: AppColors.black),
                             ),
                           )
                         : Container(

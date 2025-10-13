@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/screens/auth/login.dart';
 import 'package:peach_iq/routes.dart';
+import 'package:peach_iq/constants/loading/shimmer_gate.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -115,229 +116,222 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       body: SafeArea(
-        child: Column(
-          children: [
-            Stack(
-              children: [
-                HeaderCard(
-                  name: headerProvider.fullName,
-                  subtitle: headerProvider.email,
-                  pageheader: '       Edit profile',
-                  onSignOut: () => _handleSignOut(context),
+        child: Column(children: [
+          Stack(
+            children: [
+              HeaderCard(
+                name: headerProvider.fullName,
+                subtitle: headerProvider.email,
+                pageheader: '       Edit profile',
+                onSignOut: () => _handleSignOut(context),
+              ),
+              Positioned(
+                left: 4,
+                bottom: 3,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios,
+                      color: AppColors.white, size: 22),
+                  onPressed: () => Navigator.pop(context),
                 ),
-                Positioned(
-                  left: 4,
-                  bottom: 3,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios,
-                        color: AppColors.white, size: 22),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-              ],
-            ),
-            Expanded(
-              child: _isFetchingDetails
-                  ? const Center(child: CircularProgressIndicator())
-                  : profileData == null
-                      ? Center(
-                          child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+              ),
+            ],
+          ),
+          Expanded(
+            child: ShimmerGate(
+              isLoading: _isFetchingDetails,
+              child: profileData == null
+                  ? Center(
+                      child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                              'Error: ${updateProvider.errorMessage ?? "Could not load profile details."}'),
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: _fetchDetails,
+                            child: const Text('Retry'),
+                          )
+                        ],
+                      ),
+                    ))
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 18),
+                          _ProfileCardGroup(
                             children: [
-                              Text(
-                                  'Error: ${updateProvider.errorMessage ?? "Could not load profile details."}'),
-                              const SizedBox(height: 10),
-                              ElevatedButton(
-                                onPressed: _fetchDetails,
-                                child: const Text('Retry'),
-                              )
-                            ],
-                          ),
-                        ))
-                      : SingleChildScrollView(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 18),
-                              _ProfileCardGroup(
-                                children: [
-                                  _ProfileTile(
-                                    color: Colors.black,
-                                    icon: Icons.email_outlined,
-                                    iconSize: 26,
-                                    title: 'Email',
-                                    subtitle:
-                                        profileData.email ?? 'Not available',
-                                  ),
-                                  const SizedBox(height: 8),
-                                  _ProfileTile(
-                                    color: const Color(0xFFFFB020),
-                                    icon: CupertinoIcons.phone_fill,
-                                    iconSize: 26,
-                                    iconColor: Colors.black,
+                              _ProfileTile(
+                                color: Colors.black,
+                                icon: Icons.email_outlined,
+                                iconSize: 26,
+                                title: 'Email',
+                                subtitle: profileData.email ?? 'Not available',
+                              ),
+                              const SizedBox(height: 8),
+                              _ProfileTile(
+                                color: const Color(0xFFFFB020),
+                                icon: CupertinoIcons.phone_fill,
+                                iconSize: 26,
+                                iconColor: Colors.black,
+                                title: 'Mobile Number',
+                                subtitle:
+                                    '${caregiverDetails?.phone1Code ?? ''} ${caregiverDetails?.phone1 ?? ''}'
+                                        .trim(),
+                                onTap: () {
+                                  if (caregiverDetails == null) return;
+                                  showEditProfilePopup(
+                                    context: context,
                                     title: 'Mobile Number',
-                                    subtitle:
-                                        '${caregiverDetails?.phone1Code ?? ''} ${caregiverDetails?.phone1 ?? ''}'
-                                            .trim(),
-                                    onTap: () {
-                                      if (caregiverDetails == null) return;
-                                      showEditProfilePopup(
-                                        context: context,
-                                        title: 'Mobile Number',
-                                        prefixText:
-                                            caregiverDetails.phone1Code ?? '',
-                                        currentValue:
-                                            caregiverDetails.phone1 ?? '',
-                                        hintText: 'Enter your mobile number',
-                                        keyboardType: TextInputType.phone,
-                                        onSave: (newMobile) async {
-                                          final success = await context
-                                              .read<ProfileUpdateProvider>()
-                                              .updatePhoneNumber(
-                                                context: context,
-                                                profileData: profileData,
-                                                newPhoneNumber: newMobile,
-                                              );
-
-                                          if (mounted) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              SnackBar(
-                                                content: Text(success
-                                                    ? 'Mobile number updated!'
-                                                    : updateProvider
-                                                            .errorMessage ??
-                                                        'Update failed.'),
-                                                backgroundColor: success
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                              ),
-                                            );
-                                            if (success) {
-                                              _fetchDetails();
-                                            }
-                                          }
-                                        },
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(height: 8),
-                                  _ProfileTile(
-                                    color: const Color.fromARGB(
-                                        255, 230, 231, 241),
-                                    icon: CupertinoIcons.house_fill,
-                                    iconSize: 26,
-                                    iconColor: const Color(0xFF7C4DFF),
-                                    title: 'Address',
-                                    subtitle: _formatAddress(caregiverDetails),
-                                    onTap: () {
-                                      final details = caregiverDetails;
-                                      if (details == null) return;
-
-                                      final currentAddress = AddressData(
-                                        country:
-                                            details.country?.countryName ?? '',
-                                        stateProvince:
-                                            details.state?.stateName ?? '',
-                                        city: details.city?.cityName ?? '',
-                                        addressLine: details.addressLine ?? '',
-                                        postalCode: details.postalCode ?? '',
-                                        location: details.location ?? '',
-                                        about: details.about ?? '',
-                                      );
-                                      showAddressEditPopup(
-                                        context: context,
-                                        currentAddress: currentAddress,
-                                        onSave: ({
-                                          required countryId,
-                                          required stateId,
-                                          required cityId,
-                                          required addressLine,
-                                          required postalCode,
-                                          required location,
-                                          required about,
-                                        }) async {
-                                          final updateProvider = context
-                                              .read<ProfileUpdateProvider>();
-                                          final success = await updateProvider
-                                              .updateAddress(
+                                    prefixText:
+                                        caregiverDetails.phone1Code ?? '',
+                                    currentValue: caregiverDetails.phone1 ?? '',
+                                    hintText: 'Enter your mobile number',
+                                    keyboardType: TextInputType.phone,
+                                    onSave: (newMobile) async {
+                                      final success = await context
+                                          .read<ProfileUpdateProvider>()
+                                          .updatePhoneNumber(
                                             context: context,
                                             profileData: profileData,
-                                            newCountryId: countryId,
-                                            newStateId: stateId,
-                                            newCityId: cityId,
-                                            newAddressLine: addressLine,
-                                            newPostalCode: postalCode,
-                                            newLocation: location,
-                                            newAbout: about,
+                                            newPhoneNumber: newMobile,
                                           );
 
-                                          if (mounted) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              SnackBar(
-                                                content: Text(success
-                                                    ? 'Address updated successfully!'
-                                                    : updateProvider
-                                                            .errorMessage ??
-                                                        'Update failed.'),
-                                                backgroundColor: success
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                              ),
-                                            );
-                                            if (success) {
-                                              _fetchDetails();
-                                            }
-                                          }
-                                        },
-                                      );
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(success
+                                                ? 'Mobile number updated!'
+                                                : updateProvider.errorMessage ??
+                                                    'Update failed.'),
+                                            backgroundColor: success
+                                                ? Colors.green
+                                                : Colors.red,
+                                          ),
+                                        );
+                                        if (success) {
+                                          _fetchDetails();
+                                        }
+                                      }
                                     },
-                                  ),
-                                  const SizedBox(height: 8),
-                                  _ProfileTile(
-                                    color: const Color(0xFF17C964),
-                                    icon: CupertinoIcons.pencil,
-                                    iconSize: 26,
-                                    title: 'Change Password',
-                                    onTap: () {
-                                      AppNavigator.toChangePassword(context);
-                                    },
-                                  ),
-                                  const SizedBox(height: 8),
-                                  _ProfileTile(
-                                    color: const Color(0xFFFF7043),
-                                    icon: CupertinoIcons.doc_text_fill,
-                                    iconSize: 26,
-                                    title: 'Documents',
-                                    subtitle: 'Upload required documents',
-                                    onTap: () {
-                                      AppNavigator.toDocumentUpload(context);
-                                    },
-                                  ),
-                                  const SizedBox(height: 8),
-                                  _ProfileTile(
-                                    color: const Color(0xFF3B82F6),
-                                    icon: Icons.switch_account,
-                                    iconSize: 26,
-                                    title: 'Switch Profile',
-                                    subtitle: 'Change to another profile',
-                                    onTap: () {
-                                      // TODO: Implement switch profile logic
-                                    },
-                                  ),
-                                ],
+                                  );
+                                },
                               ),
-                              const SizedBox(height: 14),
+                              const SizedBox(height: 8),
+                              _ProfileTile(
+                                color: const Color.fromARGB(255, 230, 231, 241),
+                                icon: CupertinoIcons.house_fill,
+                                iconSize: 26,
+                                iconColor: const Color(0xFF7C4DFF),
+                                title: 'Address',
+                                subtitle: _formatAddress(caregiverDetails),
+                                onTap: () {
+                                  final details = caregiverDetails;
+                                  if (details == null) return;
+
+                                  final currentAddress = AddressData(
+                                    country: details.country?.countryName ?? '',
+                                    stateProvince:
+                                        details.state?.stateName ?? '',
+                                    city: details.city?.cityName ?? '',
+                                    addressLine: details.addressLine ?? '',
+                                    postalCode: details.postalCode ?? '',
+                                    location: details.location ?? '',
+                                    about: details.about ?? '',
+                                  );
+                                  showAddressEditPopup(
+                                    context: context,
+                                    currentAddress: currentAddress,
+                                    onSave: ({
+                                      required countryId,
+                                      required stateId,
+                                      required cityId,
+                                      required addressLine,
+                                      required postalCode,
+                                      required location,
+                                      required about,
+                                    }) async {
+                                      final updateProvider =
+                                          context.read<ProfileUpdateProvider>();
+                                      final success =
+                                          await updateProvider.updateAddress(
+                                        context: context,
+                                        profileData: profileData,
+                                        newCountryId: countryId,
+                                        newStateId: stateId,
+                                        newCityId: cityId,
+                                        newAddressLine: addressLine,
+                                        newPostalCode: postalCode,
+                                        newLocation: location,
+                                        newAbout: about,
+                                      );
+
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(success
+                                                ? 'Address updated successfully!'
+                                                : updateProvider.errorMessage ??
+                                                    'Update failed.'),
+                                            backgroundColor: success
+                                                ? Colors.green
+                                                : Colors.red,
+                                          ),
+                                        );
+                                        if (success) {
+                                          _fetchDetails();
+                                        }
+                                      }
+                                    },
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 8),
+                              _ProfileTile(
+                                color: const Color(0xFF17C964),
+                                icon: CupertinoIcons.pencil,
+                                iconSize: 26,
+                                title: 'Change Password',
+                                onTap: () {
+                                  AppNavigator.toChangePassword(context);
+                                },
+                              ),
+                              const SizedBox(height: 8),
+                              _ProfileTile(
+                                color: const Color(0xFFFF7043),
+                                icon: CupertinoIcons.doc_text_fill,
+                                iconSize: 26,
+                                title: 'Documents',
+                                subtitle: 'Upload required documents',
+                                onTap: () {
+                                  AppNavigator.toDocumentUpload(context);
+                                },
+                              ),
+                              const SizedBox(height: 8),
+                              _ProfileTile(
+                                color: const Color(0xFF3B82F6),
+                                icon: Icons.switch_account,
+                                iconSize: 26,
+                                title: 'Switch Profile',
+                                subtitle: 'Change to another profile',
+                                onTap: () {
+                                  // TODO: Implement switch profile logic
+                                },
+                              ),
                             ],
                           ),
-                        ),
+                          const SizedBox(height: 14),
+                        ],
+                      ),
+                    ),
             ),
-          ],
-        ),
+          )
+        ]),
       ),
     );
   }

@@ -230,13 +230,26 @@ class _CheckInScreenState extends State<CheckInScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Consumer<ProfileProvider>(
-              builder: (context, p, _) => HeaderCard(
-                name: p.fullName,
-                subtitle: p.email.isNotEmpty ? p.email : null,
-                pageheader: 'Check in/out',
-                onSignOut: () => _handleSignOut(context),
-              ),
+            Stack(
+              children: [
+                Consumer<ProfileProvider>(
+                  builder: (context, p, _) => HeaderCard(
+                    name: p.fullName,
+                    subtitle: p.email.isNotEmpty ? p.email : null,
+                    pageheader: '       Check in/out',
+                    onSignOut: () => _handleSignOut(context),
+                  ),
+                ),
+                Positioned(
+                  left: 4,
+                  bottom: 3,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios,
+                        color: AppColors.white, size: 22),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ],
             ),
             Expanded(
               child: SingleChildScrollView(

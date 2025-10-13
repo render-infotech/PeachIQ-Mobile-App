@@ -44,7 +44,6 @@ class AppRoutes {
   static const String about = '/about';
   static const String privacyPolicy = '/privacy-policy';
   static const String termsAndConditions = '/terms-and-conditions';
-  // Add new route constant
   static const String documentUpload = '/document-upload';
 }
 

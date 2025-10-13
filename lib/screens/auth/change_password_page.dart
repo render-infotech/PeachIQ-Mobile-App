@@ -78,13 +78,26 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              Consumer<ProfileProvider>(
-                builder: (context, p, _) => HeaderCard(
-                  name: p.fullName,
-                  subtitle: p.email.isNotEmpty ? p.email : null,
-                  pageheader: 'Change Password',
-                  onSignOut: () {},
-                ),
+              Stack(
+                children: [
+                  Consumer<ProfileProvider>(
+                    builder: (context, p, _) => HeaderCard(
+                      name: p.fullName,
+                      subtitle: p.email.isNotEmpty ? p.email : null,
+                      pageheader: '       Change Password',
+                      onSignOut: () {},
+                    ),
+                  ),
+                  Positioned(
+                    left: 4,
+                    bottom: 3,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios,
+                          color: AppColors.white, size: 22),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                ],
               ),
               Expanded(
                 child: SingleChildScrollView(

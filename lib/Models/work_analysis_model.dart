@@ -1,5 +1,3 @@
-// lib/Models/work_analysis_model.dart
-
 import 'dart:convert';
 
 WorkAnalysisWelcome workAnalysisWelcomeFromJson(String str) =>
@@ -45,12 +43,11 @@ class Data {
 class Cards {
   CardSection schedules;
   CardSection workShift;
-  CardSection timeShifts;
+  TimeShifts timeShifts;
   EstimatedEarnings estimatedEarnings;
-  // <<< 1. ADD NEW MTD PROPERTIES
   CardSection mtdSchedules;
   CardSection mtdWorkShift;
-  CardSection mtdTimeShifts;
+  TimeShifts mtdTimeShifts;
   EstimatedEarnings mtdEstimatedEarnings;
 
   Cards({
@@ -58,7 +55,6 @@ class Cards {
     required this.workShift,
     required this.timeShifts,
     required this.estimatedEarnings,
-    // <<< 2. INITIALIZE NEW PROPERTIES
     required this.mtdSchedules,
     required this.mtdWorkShift,
     required this.mtdTimeShifts,
@@ -68,13 +64,12 @@ class Cards {
   factory Cards.fromJson(Map<String, dynamic> json) => Cards(
         schedules: CardSection.fromJson(json["schedules"] ?? {}),
         workShift: CardSection.fromJson(json["work_shift"] ?? {}),
-        timeShifts: CardSection.fromJson(json["time_shifts"] ?? {}),
+        timeShifts: TimeShifts.fromJson(json["time_shifts"] ?? {}),
         estimatedEarnings:
             EstimatedEarnings.fromJson(json["estimated_earnings"] ?? {}),
-        // <<< 3. PARSE NEW MTD JSON KEYS
         mtdSchedules: CardSection.fromJson(json["mtd_schedules"] ?? {}),
         mtdWorkShift: CardSection.fromJson(json["mtd_work_shift"] ?? {}),
-        mtdTimeShifts: CardSection.fromJson(json["mtd_time_shifts"] ?? {}),
+        mtdTimeShifts: TimeShifts.fromJson(json["mtd_time_shifts"] ?? {}),
         mtdEstimatedEarnings:
             EstimatedEarnings.fromJson(json["mtd_estimated_earnings"] ?? {}),
       );
@@ -116,9 +111,30 @@ class CardDataItem {
       );
 }
 
+class TimeShifts {
+  List<CardDataItem> data;
+  int total;
+  double totalHours;
+
+  TimeShifts({
+    required this.data,
+    required this.total,
+    required this.totalHours,
+  });
+
+  factory TimeShifts.fromJson(Map<String, dynamic> json) => TimeShifts(
+        data: json["data"] == null
+            ? []
+            : List<CardDataItem>.from(
+                json["data"].map((x) => CardDataItem.fromJson(x))),
+        total: (json["total"] as num?)?.toInt() ?? 0,
+        totalHours: (json["total_hours"] as num?)?.toDouble() ?? 0.0,
+      );
+}
+
 class EstimatedEarnings {
   List<EstimatedEarningsDatum> data;
-  double total; // <<< 4. CHANGE total FROM int TO double
+  double total;
 
   EstimatedEarnings({
     required this.data,
@@ -131,7 +147,6 @@ class EstimatedEarnings {
             ? []
             : List<EstimatedEarningsDatum>.from(
                 json["data"].map((x) => EstimatedEarningsDatum.fromJson(x))),
-        // <<< 5. PARSE total AS A double
         total: (json["total"] as num?)?.toDouble() ?? 0.0,
       );
 }
@@ -139,7 +154,7 @@ class EstimatedEarnings {
 class EstimatedEarningsDatum {
   String name;
   String color;
-  double value; // <<< 6. CHANGE value FROM int TO double
+  double value;
   String currencySymbol;
   String currency;
 
@@ -155,7 +170,6 @@ class EstimatedEarningsDatum {
       EstimatedEarningsDatum(
         name: json["name"] ?? "",
         color: json["color"] ?? "",
-        // <<< 7. PARSE value AS A double
         value: (json["value"] as num?)?.toDouble() ?? 0.0,
         currencySymbol: json["currency_symbol"] ?? "",
         currency: json["currency"] ?? "",
@@ -163,30 +177,32 @@ class EstimatedEarningsDatum {
 }
 
 class Schedule {
+  DateTime start;
+  String timeShift;
   String payHours;
-  DateTime scheduleStart;
+  String institution;
+  String category;
   int estimatedPay;
-  String timeShift; // Added for time-based hour calculation
 
   Schedule({
-    required this.payHours,
-    required this.scheduleStart,
-    required this.estimatedPay,
+    required this.start,
     required this.timeShift,
+    required this.payHours,
+    required this.institution,
+    required this.category,
+    required this.estimatedPay,
   });
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
-    // This logic seems disconnected from the new JSON but is kept as is.
-    final fallbackDate = DateTime.fromMillisecondsSinceEpoch(0);
-    final dateString = json['start'];
-    final payValue = json['estimated_pay_from_api'];
-
     return Schedule(
+      start: json["start"] != null
+          ? DateTime.parse(json["start"])
+          : DateTime.now(),
+      timeShift: json["time_shift"] ?? "N/A",
       payHours: json["pay_hours"] ?? "0.00",
-      scheduleStart:
-          dateString != null ? DateTime.parse(dateString) : fallbackDate,
-      estimatedPay: (payValue as num?)?.toInt() ?? 0,
-      timeShift: json["time_shift"] ?? "Time not available",
+      institution: json["institution"] ?? "N/A",
+      category: json["category"] ?? "N/A",
+      estimatedPay: 0,
     );
   }
 }

@@ -38,12 +38,25 @@ class _AvailableShiftsState extends State<AvailableShifts> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Consumer<ProfileProvider>(
-              builder: (context, p, _) => HeaderCard(
-                name: p.fullName,
-                pageheader: 'Available Shifts',
-                onSignOut: _handleSignOut,
-              ),
+            Stack(
+              children: [
+                Consumer<ProfileProvider>(
+                  builder: (context, p, _) => HeaderCard(
+                    name: p.fullName,
+                    pageheader: '       Available Shifts',
+                    onSignOut: _handleSignOut,
+                  ),
+                ),
+                Positioned(
+                  left: 4,
+                  bottom: 3,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios,
+                        color: AppColors.white, size: 22),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 10),
             Expanded(
@@ -85,7 +98,7 @@ class _AvailableShiftsState extends State<AvailableShifts> {
                           Center(
                             child: Text(
                               'No available shifts right now.',
-                              style: TextStyle(color: Colors.grey[600]),
+                              style: TextStyle(color: AppColors.black),
                             ),
                           ),
                         ],

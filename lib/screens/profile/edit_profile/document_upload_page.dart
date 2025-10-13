@@ -261,13 +261,26 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              Consumer<ProfileProvider>(
-                builder: (context, p, _) => HeaderCard(
-                  name: p.fullName,
-                  subtitle: p.email.isNotEmpty ? p.email : null,
-                  pageheader: 'Upload Document',
-                  onSignOut: () => _handleSignOut(context), // Updated
-                ),
+              Stack(
+                children: [
+                  Consumer<ProfileProvider>(
+                    builder: (context, p, _) => HeaderCard(
+                      name: p.fullName,
+                      subtitle: p.email.isNotEmpty ? p.email : null,
+                      pageheader: '       Upload Document',
+                      onSignOut: () => _handleSignOut(context), // Updated
+                    ),
+                  ),
+                  Positioned(
+                    left: 4,
+                    bottom: 3,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios,
+                          color: AppColors.white, size: 22),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                ],
               ),
               Expanded(
                 child: SingleChildScrollView(
