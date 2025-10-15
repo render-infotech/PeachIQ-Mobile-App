@@ -167,8 +167,8 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
                         // UPDATED: Changed date format to "Month Day, Weekday"
                         dateLine:
                             DateFormat("MMMM d, EEEE").format(shift.start),
-                        time:
-                            shift.timeShift, // Use pre-formatted time from API
+                        time: shift
+                            .formattedTimeShift, // Use formatted 12-hour time
                         isSelected: index == selectedShiftIndex,
                         onTap: () {
                           setState(() {
@@ -213,7 +213,7 @@ class _ShiftDetailsSheet extends StatelessWidget {
   }
 
   String _formatShiftTimeRange(ScheduledShift shift) {
-    return shift.timeShift; // Use pre-formatted time from API
+    return shift.formattedTimeShift; // Use formatted 12-hour time
   }
 
   Widget _buildFormattedDate(DateTime date) {

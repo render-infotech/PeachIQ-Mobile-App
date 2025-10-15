@@ -113,12 +113,10 @@ class CardDataItem {
 
 class TimeShifts {
   List<CardDataItem> data;
-  int total;
   double totalHours;
 
   TimeShifts({
     required this.data,
-    required this.total,
     required this.totalHours,
   });
 
@@ -127,7 +125,6 @@ class TimeShifts {
             ? []
             : List<CardDataItem>.from(
                 json["data"].map((x) => CardDataItem.fromJson(x))),
-        total: (json["total"] as num?)?.toInt() ?? 0,
         totalHours: (json["total_hours"] as num?)?.toDouble() ?? 0.0,
       );
 }

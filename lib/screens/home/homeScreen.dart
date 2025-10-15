@@ -107,8 +107,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _buildTimeLine(dynamic schedule) {
     try {
-      // Use the pre-formatted time from API instead of hardcoded DateFormat
-      return schedule.timeShift ?? 'Time information unavailable';
+      // Use the formatted 12-hour time
+      return schedule.formattedTimeShift ?? 'Time information unavailable';
     } catch (e) {
       return 'Time information unavailable';
     }

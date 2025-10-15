@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 SchedulesShiftsWelcome schedulesShiftsWelcomeFromJson(String str) =>
     SchedulesShiftsWelcome.fromJson(json.decode(str));
@@ -53,6 +54,53 @@ class ScheduledShift {
     this.actualCheckIn,
     this.actualCheckOut,
   });
+
+  // Getter to convert 24-hour format to 12-hour format
+  String get formattedTimeShift {
+    try {
+      // Check if timeShift is already in 12-hour format (contains AM/PM)
+      if (timeShift.toUpperCase().contains('AM') ||
+          timeShift.toUpperCase().contains('PM')) {
+        return timeShift; // Already in 12-hour format
+      }
+
+      // Split the time range: "18:00:00 - 19:00:00"
+      final parts = timeShift.split(' - ');
+      if (parts.length != 2)
+        return timeShift; // Return original if format is unexpected
+
+      final startTimeStr = parts[0].trim();
+      final endTimeStr = parts[1].trim();
+
+      // Convert each time part
+      final formattedStart = _convertTo12Hour(startTimeStr);
+      final formattedEnd = _convertTo12Hour(endTimeStr);
+
+      return '$formattedStart - $formattedEnd';
+    } catch (e) {
+      return timeShift; // Return original if conversion fails
+    }
+  }
+
+  // Helper method to convert single time from 24-hour to 12-hour format
+  String _convertTo12Hour(String time24) {
+    try {
+      // Handle different formats: "18:00:00" or "18:00"
+      DateTime parsedTime;
+      if (time24.split(':').length == 3) {
+        // Format: "18:00:00"
+        parsedTime = DateFormat('HH:mm:ss').parse(time24);
+      } else {
+        // Format: "18:00"
+        parsedTime = DateFormat('HH:mm').parse(time24);
+      }
+
+      // Convert to 12-hour format
+      return DateFormat('h:mm a').format(parsedTime);
+    } catch (e) {
+      return time24; // Return original if parsing fails
+    }
+  }
 
   factory ScheduledShift.fromJson(Map<String, dynamic> json) => ScheduledShift(
         start: DateTime.parse(json["start"]),
