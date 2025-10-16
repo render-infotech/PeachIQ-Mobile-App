@@ -228,14 +228,50 @@ class _HomeScreenState extends State<HomeScreen> {
                           if (shiftsProvider.hasActionableSchedules) {
                             final sortedActionable =
                                 List.of(shiftsProvider.actionableSchedules);
-                            sortedActionable.sort(
-                                (a, b) => a.startDate.compareTo(b.startDate));
+                            sortedActionable.sort((a, b) {
+                              // Primary: Sort by date only (year, month, day)
+                              final aDateOnly = DateTime(a.startDate.year,
+                                  a.startDate.month, a.startDate.day);
+                              final bDateOnly = DateTime(b.startDate.year,
+                                  b.startDate.month, b.startDate.day);
+                              final dateComparison =
+                                  aDateOnly.compareTo(bDateOnly);
+                              if (dateComparison != 0) {
+                                return dateComparison;
+                              }
+                              // Secondary: For same date, sort by time (earliest first)
+                              final timeComparison =
+                                  a.startDate.compareTo(b.startDate);
+                              if (timeComparison != 0) {
+                                return timeComparison;
+                              }
+                              // Tertiary: Sort by notifyId for stable ordering
+                              return a.notifyId.compareTo(b.notifyId);
+                            });
                             shiftsToShow = sortedActionable.take(2).toList();
                           } else if (shiftsProvider.allSchedules.isNotEmpty) {
                             final sortedResponded =
                                 List.of(shiftsProvider.allSchedules);
-                            sortedResponded.sort(
-                                (a, b) => a.startDate.compareTo(b.startDate));
+                            sortedResponded.sort((a, b) {
+                              // Primary: Sort by date only (year, month, day)
+                              final aDateOnly = DateTime(a.startDate.year,
+                                  a.startDate.month, a.startDate.day);
+                              final bDateOnly = DateTime(b.startDate.year,
+                                  b.startDate.month, b.startDate.day);
+                              final dateComparison =
+                                  aDateOnly.compareTo(bDateOnly);
+                              if (dateComparison != 0) {
+                                return dateComparison;
+                              }
+                              // Secondary: For same date, sort by time (earliest first)
+                              final timeComparison =
+                                  a.startDate.compareTo(b.startDate);
+                              if (timeComparison != 0) {
+                                return timeComparison;
+                              }
+                              // Tertiary: Sort by notifyId for stable ordering
+                              return a.notifyId.compareTo(b.notifyId);
+                            });
                             shiftsToShow = sortedResponded.take(2).toList();
                           }
                           if (shiftsToShow.isEmpty) {

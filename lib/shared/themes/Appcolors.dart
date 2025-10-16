@@ -10,4 +10,5 @@ class AppColors {
   //green palatte
   static const Color AppSelectedGreen = Color(0xFF0BA94D);
   static const Color cardsWhite = Color(0xFFF4F6FF);
+  static const Color Red = Color(0xFFEF4444);
 }

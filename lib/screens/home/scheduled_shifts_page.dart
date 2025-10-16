@@ -295,9 +295,9 @@ class _ShiftDetailsSheet extends StatelessWidget {
           const Text(
             'Shift Details',
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppColors.black),
           ),
           const SizedBox(height: 16),
           Container(

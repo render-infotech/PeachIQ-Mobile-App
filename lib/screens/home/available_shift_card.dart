@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:peach_iq/Models/available_shifts_model.dart';
 import 'package:peach_iq/Providers/available_shifts_provider.dart';
-import 'package:peach_iq/Providers/response_provider.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/custom_pop_up.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +20,6 @@ class AvailableShiftCard extends StatefulWidget {
 
 class _AvailableShiftCardState extends State<AvailableShiftCard> {
   bool _isResponding = false;
-  bool _isDismissed = false;
 
   (String, String, String) _splitOrdinal(String input) {
     final parts = input.split(' ');
@@ -37,18 +35,60 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
     return ('$before $day', suf, ' $after');
   }
 
-  void _showSnackbar(String message, {bool isError = false}) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
+  void _showSnackbar(ScaffoldMessengerState messenger, String message,
+      {bool isError = false, bool isSuccess = false}) {
+    Color backgroundColor;
+    Color textColor = Colors.white;
+    Duration duration;
+
+    if (isError) {
+      backgroundColor = AppColors.Red;
+      duration = const Duration(seconds: 4);
+    } else if (isSuccess) {
+      backgroundColor = AppColors.AppSelectedGreen;
+      duration = const Duration(seconds: 3);
+    } else {
+      backgroundColor = AppColors.primary;
+      duration = const Duration(seconds: 3);
+    }
+
+    messenger.showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.redAccent : Colors.green,
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            fontFamily: 'Manrope',
+          ),
+        ),
+        backgroundColor: backgroundColor,
         behavior: SnackBarBehavior.floating,
+        duration: duration,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        action: isError
+            ? SnackBarAction(
+                label: 'Dismiss',
+                textColor: Colors.white,
+                onPressed: () {
+                  messenger.hideCurrentSnackBar();
+                },
+              )
+            : null,
       ),
     );
   }
 
   void _showInterestConfirmationDialog() {
+    final shiftInfo =
+        'NotifyId: ${widget.shift.notifyId} | Facility: ${widget.shift.name}';
+    debugPrint(
+        '💚 [UI_CONFIRMATION] Showing interest confirmation dialog | $shiftInfo');
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -102,6 +142,8 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      debugPrint(
+                          '✅ [UI_CONFIRMATION] User clicked "Got it!" - proceeding with INTERESTED response | $shiftInfo');
                       Navigator.of(dialogContext).pop();
                       _respondToShift(1);
                     },
@@ -131,14 +173,25 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
   }
 
   void _showNotInterestedConfirmation() {
+    final shiftInfo =
+        'NotifyId: ${widget.shift.notifyId} | Facility: ${widget.shift.name}';
+    debugPrint(
+        '🔴 [UI_CONFIRMATION] Showing not interested confirmation dialog | $shiftInfo');
+
     showAppPopup(
       context,
       title: 'Confirm Action',
       message: 'Are you sure you are not interested in this shift?',
       primaryText: 'Cancel',
-      onPrimary: () => Navigator.of(context).pop(),
+      onPrimary: () {
+        debugPrint(
+            '↩️ [UI_CONFIRMATION] User cancelled "Not Interested" action | $shiftInfo');
+        Navigator.of(context).pop();
+      },
       secondaryText: 'Yes',
       onSecondary: () {
+        debugPrint(
+            '❌ [UI_CONFIRMATION] User confirmed "Not Interested" - proceeding with NOT_INTERESTED response | $shiftInfo');
         Navigator.of(context).pop();
         _respondToShift(-1);
       },
@@ -148,41 +201,80 @@ class _AvailableShiftCardState extends State<AvailableShiftCard> {
   }
 
   Future<void> _respondToShift(int status) async {
-    if (!mounted) return;
+    final statusText = status == 1
+        ? 'INTERESTED'
+        : status == -1
+            ? 'NOT_INTERESTED'
+            : 'UNKNOWN';
+    final shiftInfo =
+        'NotifyId: ${widget.shift.notifyId} | Facility: ${widget.shift.name} | Date: ${widget.shift.dateLine}';
+
+    debugPrint(
+        '🎯 [USER_ACTION] User clicked response button | $shiftInfo | Response: $statusText ($status)');
+
+    if (!mounted) {
+      debugPrint(
+          '⚠️ [USER_ACTION] Widget not mounted, aborting response | $shiftInfo');
+      return;
+    }
+
+    if (_isResponding) {
+      debugPrint(
+          '🚫 [USER_ACTION] Already responding to shift, ignoring duplicate | $shiftInfo');
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+
+    debugPrint(
+        '🔄 [USER_ACTION] Setting responding state to true | $shiftInfo');
     setState(() => _isResponding = true);
 
     try {
-      final responseProvider = context.read<ShiftResponseProvider>();
       final shiftsProvider = context.read<AvailableShiftsProvider>();
+      debugPrint(
+          '📞 [USER_ACTION] Calling shiftsProvider.respondToShift() | $shiftInfo | Status: $statusText');
 
-      await responseProvider.respondToShift(
-        notifyId: widget.shift.notifyId,
-        status: status,
-        shiftsProvider: shiftsProvider,
+      final success = await shiftsProvider.respondToShift(
+        widget.shift.notifyId,
+        status,
       );
 
-      if (mounted) {
-        if (status == -1) {
-          setState(() => _isDismissed = true);
-        }
+      debugPrint(
+          '📋 [USER_ACTION] Provider response completed | $shiftInfo | Success: $success');
 
-        final message = status == 1
-            ? 'Your interest has been submitted successfully.'
-            : 'Shift has been dismissed.';
-        _showSnackbar(message);
+      if (success) {
+        if (status == 1) {
+          // *** CHANGE IS HERE ***
+          // Now showing snackbar for "Interested" as well for consistency.
+          _showSnackbar(messenger, 'Interest confirmed', isSuccess: true);
+        } else {
+          _showSnackbar(messenger, 'Shift dismissed', isSuccess: true);
+        }
+      } else {
+        _showSnackbar(messenger, 'Failed to submit response. Please try again.',
+            isError: true);
       }
     } catch (e) {
-      if (mounted) {
-        _showSnackbar('An error occurred. Please try again.', isError: true);
-      }
+      _showSnackbar(messenger, 'Failed to submit response. Please try again.',
+          isError: true);
     } finally {
       if (mounted) {
+        debugPrint(
+            '🏁 [USER_ACTION] Setting responding state to false | $shiftInfo');
         setState(() => _isResponding = false);
+      } else {
+        debugPrint(
+            '⚠️ [USER_ACTION] Widget unmounted, cannot update responding state | $shiftInfo');
       }
     }
   }
 
   void _showActionDialog() {
+    final shiftInfo =
+        'NotifyId: ${widget.shift.notifyId} | Facility: ${widget.shift.name}';
+    debugPrint('📱 [UI_DIALOG] Showing action dialog | $shiftInfo');
+
     showAppPopup(
       context,
       title: 'Scheduling Request from ${widget.shift.name}',
@@ -192,11 +284,14 @@ Shift: ${widget.shift.shiftType} (${widget.shift.timeLine})
 Unit Area: ${widget.shift.unitArea}''',
       primaryText: 'Not Interested',
       onPrimary: () {
+        debugPrint(
+            '🔴 [UI_DIALOG] User selected "Not Interested" | $shiftInfo');
         Navigator.of(context).pop();
         _showNotInterestedConfirmation();
       },
       secondaryText: 'Interested',
       onSecondary: () {
+        debugPrint('🟢 [UI_DIALOG] User selected "Interested" | $shiftInfo');
         Navigator.of(context).pop();
         _showInterestConfirmationDialog();
       },
@@ -205,7 +300,7 @@ Unit Area: ${widget.shift.unitArea}''',
 
   @override
   Widget build(BuildContext context) {
-    if (widget.shift.caregiverDecision == -1 || _isDismissed) {
+    if (widget.shift.caregiverDecision == -1) {
       return const SizedBox.shrink();
     }
 
@@ -324,11 +419,25 @@ Unit Area: ${widget.shift.unitArea}''',
                       child: InkWell(
                         onTap: isEnabled ? _showActionDialog : null,
                         child: _isResponding
-                            ? const SizedBox(
-                                width: 12,
-                                height: 12,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.white))
+                            ? const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                      width: 12,
+                                      height: 12,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2, color: Colors.white)),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Respond',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              )
                             : Text(
                                 buttonText,
                                 style: const TextStyle(

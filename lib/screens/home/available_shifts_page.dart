@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:peach_iq/screens/home/available_shift_card.dart'; // Ensure this import path is correct
-import 'package:peach_iq/widgets/header_card_widget.dart'; // Ensure this import path is correct
+import 'package:peach_iq/screens/home/available_shift_card.dart';
+import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
-import 'package:peach_iq/Providers/profile_provider.dart'; // Ensure this import path is correct
-import 'package:peach_iq/Providers/available_shifts_provider.dart'; // Ensure this import path is correct
-import 'package:peach_iq/shared/themes/Appcolors.dart'; // Ensure this import path is correct
+import 'package:peach_iq/Providers/profile_provider.dart';
+import 'package:peach_iq/Providers/available_shifts_provider.dart';
+import 'package:peach_iq/shared/themes/Appcolors.dart';
 
 class AvailableShifts extends StatefulWidget {
   const AvailableShifts({super.key});
@@ -106,7 +106,7 @@ class _AvailableShiftsState extends State<AvailableShifts> {
                     );
                   }
 
-                  // --- NEW SORTING LOGIC ---
+                  // --- STABLE SORTING LOGIC WITH TIME ---
                   final sortedSchedules = List.of(shiftsProvider.allSchedules);
                   sortedSchedules.sort((a, b) {
                     // Group 1: Shifts needing a response (0)
@@ -118,10 +118,26 @@ class _AvailableShiftsState extends State<AvailableShifts> {
                       return aGroup.compareTo(bGroup); // Sort by group
                     }
 
-                    // Within each group, sort by earliest start date (ascending)
-                    return a.startDate.compareTo(b.startDate);
+                    // Primary: Sort by date only (year, month, day)
+                    final aDateOnly = DateTime(
+                        a.startDate.year, a.startDate.month, a.startDate.day);
+                    final bDateOnly = DateTime(
+                        b.startDate.year, b.startDate.month, b.startDate.day);
+                    final dateComparison = aDateOnly.compareTo(bDateOnly);
+                    if (dateComparison != 0) {
+                      return dateComparison;
+                    }
+
+                    // Secondary: For same date, sort by time (earliest first)
+                    final timeComparison = a.startDate.compareTo(b.startDate);
+                    if (timeComparison != 0) {
+                      return timeComparison;
+                    }
+
+                    // Tertiary: Sort by notifyId for stable ordering (prevents vanishing)
+                    return a.notifyId.compareTo(b.notifyId);
                   });
-                  // --- END OF SORTING LOGIC ---
+                  // --- END OF STABLE SORTING LOGIC ---
 
                   return RefreshIndicator(
                     onRefresh: () => shiftsProvider.fetchAvailableShifts(),
@@ -130,7 +146,9 @@ class _AvailableShiftsState extends State<AvailableShifts> {
                       itemCount: sortedSchedules.length,
                       itemBuilder: (context, index) {
                         final schedule = sortedSchedules[index];
+                        // ✅ CRITICAL FIX: Add ValueKey to track widgets properly
                         return AvailableShiftCard(
+                          key: ValueKey(schedule.notifyId),
                           shift: schedule,
                         );
                       },
