@@ -6,17 +6,17 @@ import 'package:peach_iq/shared/themes/Appcolors.dart';
 class HeaderCard extends StatelessWidget {
   final String name;
   final String? subtitle;
-  final VoidCallback? onSignOut;
   final String? pageheader;
   final bool isLoading;
+  final VoidCallback? onQrCodeTap;
 
   const HeaderCard({
     super.key,
     required this.name,
     this.subtitle,
-    this.onSignOut,
     this.pageheader,
     this.isLoading = false,
+    this.onQrCodeTap,
   });
 
   @override
@@ -73,9 +73,9 @@ class HeaderCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            if (onSignOut != null)
+            if (onQrCodeTap != null)
               GestureDetector(
-                onTap: onSignOut,
+                onTap: onQrCodeTap,
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -83,13 +83,13 @@ class HeaderCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(
-                        FontAwesomeIcons.signOutAlt,
+                        Icons.qr_code,
                         color: AppColors.white,
                         size: 20,
                       ),
                       const SizedBox(height: 2),
                       const Text(
-                        "Log out",
+                        "QR Code",
                         style: TextStyle(
                           color: AppColors.white,
                           fontSize: 10,

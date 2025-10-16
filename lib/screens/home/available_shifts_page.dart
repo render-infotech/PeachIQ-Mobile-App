@@ -26,10 +26,6 @@ class _AvailableShiftsState extends State<AvailableShifts> {
     });
   }
 
-  void _handleSignOut() {
-    // Your sign out logic here
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,7 +40,13 @@ class _AvailableShiftsState extends State<AvailableShifts> {
                   builder: (context, p, _) => HeaderCard(
                     name: p.fullName,
                     pageheader: '       Available Shifts',
-                    onSignOut: _handleSignOut,
+                    onQrCodeTap: () {
+                      // TODO: Implement QR code functionality
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('QR Code feature coming soon!')),
+                      );
+                    },
                   ),
                 ),
                 Positioned(

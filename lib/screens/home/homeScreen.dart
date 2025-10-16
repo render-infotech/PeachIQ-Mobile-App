@@ -114,70 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _handleSignOut() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        title: const Text(
-          'Sign Out',
-          style: TextStyle(color: AppColors.black),
-        ),
-        content: const Text(
-          'Are you sure you want to sign out?',
-          style: TextStyle(color: AppColors.black),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.primary),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              try {
-                final profileProvider =
-                    Provider.of<ProfileProvider>(context, listen: false);
-                final workAnalysisProvider =
-                    Provider.of<WorkAnalysisProvider>(context, listen: false);
-
-                await profileProvider.logout();
-                _availableShiftsProvider.clear();
-                _scheduledShiftsProvider.clear();
-                workAnalysisProvider.clear();
-
-                if (mounted) {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginPage()),
-                    (route) => false,
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginPage()),
-                    (route) => false,
-                  );
-                }
-              }
-            },
-            child: const Text(
-              'Sign Out',
-              style: TextStyle(color: AppColors.primary),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -194,7 +130,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   subtitle: profileProvider.email.isNotEmpty
                       ? profileProvider.email
                       : null,
-                  onSignOut: _handleSignOut,
+                  onQrCodeTap: () {
+                    // TODO: Implement QR code functionality
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('QR Code feature coming soon!')),
+                    );
+                  },
                 );
               },
             ),

@@ -105,7 +105,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               builder: (context, p, _) => HeaderCard(
                 name: p.fullName,
                 subtitle: p.email.isNotEmpty ? p.email : null,
-                onSignOut: () => _handleSignOut(context),
+                onQrCodeTap: () {
+                  // TODO: Implement QR code functionality
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('QR Code feature coming soon!')),
+                  );
+                },
               ),
             ),
             Expanded(
@@ -176,6 +182,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       leadingIcon: CupertinoIcons.share_solid,
                       title: 'Share This App',
                       onTap: () {},
+                    ),
+                    divider,
+                    _SettingsTile(
+                      leadingColor: const Color(0xFFFF5252),
+                      leadingIcon: CupertinoIcons.square_arrow_right,
+                      title: 'Log Out',
+                      onTap: () => _handleSignOut(context),
                     ),
                     const SizedBox(height: 14),
                   ],

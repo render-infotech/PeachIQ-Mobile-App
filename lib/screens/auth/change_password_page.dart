@@ -85,7 +85,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       name: p.fullName,
                       subtitle: p.email.isNotEmpty ? p.email : null,
                       pageheader: '       Change Password',
-                      onSignOut: () {},
+                      onQrCodeTap: () {
+                        // TODO: Implement QR code functionality
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('QR Code feature coming soon!')),
+                        );
+                      },
                     ),
                   ),
                   Positioned(

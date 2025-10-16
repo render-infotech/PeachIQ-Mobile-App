@@ -44,53 +44,6 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
     );
   }
 
-  void _handleSignOut(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-              backgroundColor: AppColors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              title: const Text(
-                'Sign Out',
-                style: TextStyle(color: AppColors.black),
-              ),
-              content: const Text(
-                'Are you sure you want to sign out?',
-                style: TextStyle(color: AppColors.black),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(color: AppColors.primary),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    final profileProvider =
-                        Provider.of<ProfileProvider>(context, listen: false);
-                    await profileProvider.logout();
-
-                    if (mounted) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginPage()),
-                        (route) => false,
-                      );
-                    }
-                  },
-                  child: const Text(
-                    'Sign Out',
-                    style: TextStyle(color: AppColors.primary),
-                  ),
-                ),
-              ],
-            ));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,7 +59,13 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
                     name: p.fullName,
                     subtitle: p.email.isNotEmpty ? p.email : null,
                     pageheader: '       All Scheduled Shifts',
-                    onSignOut: () => _handleSignOut(context),
+                    onQrCodeTap: () {
+                      // TODO: Implement QR code functionality
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('QR Code feature coming soon!')),
+                      );
+                    },
                   ),
                 ),
                 Positioned(
