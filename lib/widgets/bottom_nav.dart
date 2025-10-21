@@ -40,16 +40,18 @@ class AppBottomNav extends StatelessWidget {
           color: unselectedItemColor,
         ),
         backgroundColor: backgroundColor,
+        // --- FIX IS HERE ---
         selectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.w900,
           fontFamily: 'Manrope',
-          fontSize: 14,
+          fontSize: 12, // Reduced from 14
         ),
         unselectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.w400,
           fontFamily: 'Manrope',
-          fontSize: 14,
+          fontSize: 10, // Reduced from 14
         ),
+        // --- END OF FIX ---
         items: const [
           BottomNavigationBarItem(
             icon: Icon(

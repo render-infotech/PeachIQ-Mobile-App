@@ -236,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 16),
                       _SectionHeader(
-                        title: 'Your Scheduled Shifts',
+                        title: 'Scheduled Shifts',
                         actionText: 'View all Schedules',
                         onAction: () {
                           AppNavigator.toScheduledShifts(context);
@@ -300,17 +300,24 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'Manrope',
-            letterSpacing: 0.5,
-            color: AppColors.black,
+        Expanded(
+          child: Text(
+            title,
+            // Force text to a single line and add an ellipsis (...) on overflow
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              fontFamily: 'Manrope',
+              letterSpacing: 0.5,
+              color: AppColors.black,
+            ),
           ),
         ),
+        const SizedBox(width: 8),
         CompactTextButton(label: actionText, onPressed: onAction),
       ],
     );

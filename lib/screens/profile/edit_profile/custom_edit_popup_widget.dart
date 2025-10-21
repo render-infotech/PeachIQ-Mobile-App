@@ -48,120 +48,132 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      // KEY FIX 1: Wrap content in a SizedBox to constrain the width
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.9,
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          // KEY FIX 2: Use a SingleChildScrollView to prevent overflow from the keyboard
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // Keep the dialog compact
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Edit ${widget.title}',
-                    style: TextStyle(
-                        fontSize: 15,
-                        color: AppColors.black,
-                        fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _controller,
-                keyboardType: widget.keyboardType ?? TextInputType.text,
-                maxLines: widget.maxLines,
-                style: TextStyle(color: AppColors.black, fontSize: 16),
-                decoration: InputDecoration(
-                  prefixIcon: widget.prefixText != null
-                      ? Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 12, 0, 0),
-                          child: Text(
-                            widget.prefixText!,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: AppColors.black.withOpacity(0.7),
-                            ),
-                          ),
-                        )
-                      : null,
-                  labelText: widget.title,
-                  hintText: widget.hintText,
-                  labelStyle: TextStyle(color: AppColors.black),
-                  hintStyle: TextStyle(color: AppColors.black.withOpacity(0.5)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide:
-                        BorderSide(color: AppColors.black.withOpacity(0.3)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: AppColors.primary, width: 2),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide:
-                        BorderSide(color: AppColors.black.withOpacity(0.3)),
-                  ),
-                  filled: true,
-                  fillColor: AppColors.white,
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return '${widget.title} cannot be empty';
-                  }
-
-                  if (value.length < 10) {
-                    return 'Please enter a valid mobile number';
-                  }
-
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.black,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
-                    ),
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(fontSize: 14, color: AppColors.primary),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        widget.onSave(_controller.text.trim());
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Edit ${widget.title}',
+                        style: TextStyle(
+                            fontSize: 15,
+                            color: AppColors.black,
+                            fontWeight: FontWeight.w500),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _controller,
+                    keyboardType: widget.keyboardType ?? TextInputType.text,
+                    maxLines: widget.maxLines,
+                    style: TextStyle(color: AppColors.black, fontSize: 16),
+                    decoration: InputDecoration(
+                      prefixIcon: widget.prefixText != null
+                          ? Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 12, 0, 0),
+                              child: Text(
+                                widget.prefixText!,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.black.withOpacity(0.7),
+                                ),
+                              ),
+                            )
+                          : null,
+                      labelText: widget.title,
+                      hintText: widget.hintText,
+                      labelStyle: TextStyle(color: AppColors.black),
+                      hintStyle:
+                          TextStyle(color: AppColors.black.withOpacity(0.5)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                            color: AppColors.black.withOpacity(0.3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide:
+                            BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                            color: AppColors.black.withOpacity(0.3)),
+                      ),
+                      filled: true,
+                      fillColor: AppColors.white,
                     ),
-                    child: const Text(
-                      'Save',
-                      style:
-                          TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return '${widget.title} cannot be empty';
+                      }
+
+                      // Only apply length validation for phone numbers
+                      if (widget.keyboardType == TextInputType.phone &&
+                          value.length < 10) {
+                        return 'Please enter a valid mobile number';
+                      }
+
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.black,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                        ),
+                        child: const Text(
+                          'Cancel',
+                          style:
+                              TextStyle(fontSize: 14, color: AppColors.primary),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            widget.onSave(_controller.text.trim());
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        child: const Text(
+                          'Save',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
