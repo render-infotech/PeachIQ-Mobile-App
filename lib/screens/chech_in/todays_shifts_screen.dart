@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:peach_iq/QR/qr_code_widget.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:peach_iq/routes.dart';
@@ -79,12 +80,11 @@ class _TodaysShiftsScreenState extends State<TodaysShiftsScreen> {
                 subtitle: p.email.isNotEmpty ? p.email : null,
                 pageheader: 'Today\'s Shifts',
                 onQrCodeTap: () {
-                  // TODO: Implement QR code functionality
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('QR Code feature coming soon!')),
-                  );
-                },
+                    showDialog(
+                      context: context,
+                      builder: (context) => const QRCodeDialog(),
+                    );
+                  },
               ),
             ),
             Expanded(

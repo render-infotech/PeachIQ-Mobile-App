@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:peach_iq/QR/qr_code_widget.dart';
 import 'package:peach_iq/screens/Notifications/inbox_tabbar.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
@@ -31,10 +32,9 @@ class _InboxScreenState extends State<InboxScreen> {
                   subtitle: p.email.isNotEmpty ? p.email : null,
                   pageheader: 'Notifications',
                   onQrCodeTap: () {
-                    // TODO: Implement QR code functionality
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('QR Code feature coming soon!')),
+                    showDialog(
+                      context: context,
+                      builder: (context) => const QRCodeDialog(),
                     );
                   },
                 ),

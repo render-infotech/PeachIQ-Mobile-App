@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
 import 'package:peach_iq/Providers/document_provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
+import 'package:peach_iq/QR/qr_code_widget.dart';
 import 'package:peach_iq/screens/auth/login.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
@@ -221,12 +222,11 @@ class _DocumentUploadScreenState extends State<DocumentUploadScreen> {
                       subtitle: p.email.isNotEmpty ? p.email : null,
                       pageheader: '       Upload Document',
                       onQrCodeTap: () {
-                        // TODO: Implement QR code functionality
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('QR Code feature coming soon!')),
-                        );
-                      },
+                    showDialog(
+                      context: context,
+                      builder: (context) => const QRCodeDialog(),
+                    );
+                  },
                     ),
                   ),
                   Positioned(

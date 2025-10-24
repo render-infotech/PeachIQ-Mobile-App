@@ -1,5 +1,6 @@
 // lib/providers/profile_provider.dart
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:peach_iq/constants/api_utils.dart';
@@ -25,6 +26,17 @@ class ProfileProvider extends ChangeNotifier {
   }
 
   String get email => _profile?.email.trim() ?? '';
+
+  // --- NEW GETTERS ADDED HERE ---
+
+  /// Returns the user's ID, or null if the profile isn't loaded.
+  int? get userId => _profile?.id;
+
+  /// Returns the user's dashboard type (e.g., "caregiver"), or an empty string.
+  String get dashboard => _profile?.dashboard.trim() ?? '';
+  
+  // --- END OF NEW GETTERS ---
+
 
   void setProfile(Profile profile) {
     _profile = profile;
@@ -80,16 +92,18 @@ class ProfileProvider extends ChangeNotifier {
       if (resp.statusCode == 200) {
         final Map<String, dynamic> map =
             jsonDecode(resp.body) as Map<String, dynamic>;
+        
+        // NO CHANGE NEEDED HERE:
+        // ProfileResponse.fromMap correctly calls Profile.fromMap,
+        // which now parses 'id' and 'dashboard' automatically.
         final profileResp = ProfileResponse.fromMap(map);
         _profile = profileResp.data;
         _errorMessage = null;
         if (kDebugMode) print('Profile loaded successfully');
 
-        // Try to persist caregiver_id if present in an alternative endpoint
         try {
-          // Some projects fetch detailed caregiver info elsewhere; if already
-          // available via ProfileUpdateProvider, skip here.
-          // No direct caregiver_id in this light profile model.
+          // You could add logic here using the new `_profile.id`
+          // or `_profile.dashboard` if needed
         } catch (_) {}
       } else if (resp.statusCode == 401) {
         _errorMessage = 'Authentication failed. Please login again.';

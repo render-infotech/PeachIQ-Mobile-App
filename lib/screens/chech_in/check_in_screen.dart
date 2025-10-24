@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:peach_iq/Providers/chekinout_provider.dart';
+import 'package:peach_iq/QR/qr_code_widget.dart';
 import 'package:peach_iq/models/shift_data_model.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
@@ -199,12 +200,11 @@ class _CheckInScreenState extends State<CheckInScreen> {
                     subtitle: p.email.isNotEmpty ? p.email : null,
                     pageheader: '       Check in/out',
                     onQrCodeTap: () {
-                      // TODO: Implement QR code functionality
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('QR Code feature coming soon!')),
-                      );
-                    },
+                    showDialog(
+                      context: context,
+                      builder: (context) => const QRCodeDialog(),
+                    );
+                  },
                   ),
                 ),
                 Positioned(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:peach_iq/QR/qr_code_widget.dart';
 import 'package:peach_iq/screens/home/available_shift_card.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
@@ -41,12 +42,11 @@ class _AvailableShiftsState extends State<AvailableShifts> {
                     name: p.fullName,
                     pageheader: '       Available Shifts',
                     onQrCodeTap: () {
-                      // TODO: Implement QR code functionality
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('QR Code feature coming soon!')),
-                      );
-                    },
+                    showDialog(
+                      context: context,
+                      builder: (context) => const QRCodeDialog(),
+                    );
+                  },
                   ),
                 ),
                 Positioned(

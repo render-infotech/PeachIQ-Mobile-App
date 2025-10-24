@@ -14,6 +14,7 @@ import 'package:peach_iq/Providers/available_shifts_provider.dart';
 import 'package:peach_iq/Providers/work_analysis_provider.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/text_button.dart';
+import 'package:peach_iq/QR/qr_code_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
@@ -131,10 +132,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? profileProvider.email
                       : null,
                   onQrCodeTap: () {
-                    // TODO: Implement QR code functionality
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('QR Code feature coming soon!')),
+                    showDialog(
+                      context: context,
+                      builder: (context) => const QRCodeDialog(),
                     );
                   },
                 );
@@ -191,38 +191,23 @@ class _HomeScreenState extends State<HomeScreen> {
                               return a.notifyId.compareTo(b.notifyId);
                             });
                             shiftsToShow = sortedActionable.take(2).toList();
-                          } else if (shiftsProvider.allSchedules.isNotEmpty) {
-                            final sortedResponded =
-                                List.of(shiftsProvider.allSchedules);
-                            sortedResponded.sort((a, b) {
-                              // Primary: Sort by date only (year, month, day)
-                              final aDateOnly = DateTime(a.startDate.year,
-                                  a.startDate.month, a.startDate.day);
-                              final bDateOnly = DateTime(b.startDate.year,
-                                  b.startDate.month, b.startDate.day);
-                              final dateComparison =
-                                  aDateOnly.compareTo(bDateOnly);
-                              if (dateComparison != 0) {
-                                return dateComparison;
-                              }
-                              // Secondary: For same date, sort by time (earliest first)
-                              final timeComparison =
-                                  a.startDate.compareTo(b.startDate);
-                              if (timeComparison != 0) {
-                                return timeComparison;
-                              }
-                              // Tertiary: Sort by notifyId for stable ordering
-                              return a.notifyId.compareTo(b.notifyId);
-                            });
-                            shiftsToShow = sortedResponded.take(2).toList();
                           }
                           if (shiftsToShow.isEmpty) {
-                            return const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 24.0),
+                            String message;
+                            if (shiftsProvider.allSchedules.isEmpty) {
+                              message = 'You have no available shifts.';
+                            } else if (!shiftsProvider.hasActionableSchedules) {
+                              message = 'You have responded to all shifts.';
+                            } else {
+                              message = 'No available shifts at the moment.';
+                            }
+                            
+                            return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 24.0),
                                 child: Center(
                                     child: Text(
-                                  'No available shifts at the moment.',
-                                  style: TextStyle(color: AppColors.black),
+                                  message,
+                                  style: const TextStyle(color: AppColors.black),
                                 )));
                           }
                           return Column(
@@ -386,7 +371,7 @@ class _AnalysisRow extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                   color: AppColors.black),
             ),
-            const SizedBox(height: 9),
+            const SizedBox(height: 12),
             Row(
               children: [
                 card(

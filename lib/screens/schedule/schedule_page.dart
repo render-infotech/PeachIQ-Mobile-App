@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:peach_iq/Models/scheduled_shifts_model.dart';
 import 'package:peach_iq/Providers/calender_provider.dart';
+import 'package:peach_iq/QR/qr_code_widget.dart';
 import 'package:peach_iq/screens/schedule/calender_widget.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
@@ -122,10 +123,9 @@ class _SchedulePageState extends State<SchedulePage> {
                   subtitle: p.email.isNotEmpty ? p.email : null,
                   pageheader: 'Schedule overview',
                   onQrCodeTap: () {
-                    // TODO: Implement QR code functionality
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('QR Code feature coming soon!')),
+                    showDialog(
+                      context: context,
+                      builder: (context) => const QRCodeDialog(),
                     );
                   },
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:peach_iq/Providers/profile_update_provider.dart';
+import 'package:peach_iq/QR/qr_code_widget.dart';
 import 'package:peach_iq/models/caregiver_profile_model.dart';
 import 'package:peach_iq/screens/profile/edit_profile/address_edit_widget.dart';
 import 'package:peach_iq/screens/profile/edit_profile/custom_edit_popup_widget.dart';
@@ -78,12 +79,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 subtitle: headerProvider.email,
                 pageheader: '       Edit profile',
                 onQrCodeTap: () {
-                  // TODO: Implement QR code functionality
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('QR Code feature coming soon!')),
-                  );
-                },
+                    showDialog(
+                      context: context,
+                      builder: (context) => const QRCodeDialog(),
+                    );
+                  },
               ),
               Positioned(
                 left: 4,

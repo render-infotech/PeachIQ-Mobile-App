@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:peach_iq/Providers/available_shifts_provider.dart';
 import 'package:peach_iq/Providers/scheduled_shifts_provider.dart';
 import 'package:peach_iq/Providers/work_analysis_provider.dart';
+import 'package:peach_iq/QR/qr_code_widget.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
@@ -106,12 +107,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 name: p.fullName,
                 subtitle: p.email.isNotEmpty ? p.email : null,
                 onQrCodeTap: () {
-                  // TODO: Implement QR code functionality
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('QR Code feature coming soon!')),
-                  );
-                },
+                    showDialog(
+                      context: context,
+                      builder: (context) => const QRCodeDialog(),
+                    );
+                  },
               ),
             ),
             Expanded(

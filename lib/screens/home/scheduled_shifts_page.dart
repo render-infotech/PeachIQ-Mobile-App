@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:peach_iq/Models/scheduled_shifts_model.dart';
 import 'package:peach_iq/Providers/scheduled_shifts_provider.dart';
+import 'package:peach_iq/QR/qr_code_widget.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
@@ -59,13 +60,12 @@ class _ScheduledShiftsState extends State<ScheduledShifts> {
                     name: p.fullName,
                     subtitle: p.email.isNotEmpty ? p.email : null,
                     pageheader: '       All Scheduled Shifts',
-                    onQrCodeTap: () {
-                      // TODO: Implement QR code functionality
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('QR Code feature coming soon!')),
-                      );
-                    },
+                   onQrCodeTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => const QRCodeDialog(),
+                    );
+                  },
                   ),
                 ),
                 Positioned(

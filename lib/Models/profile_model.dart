@@ -1,7 +1,7 @@
 // lib/models/profile_model.dart
 import 'dart:convert';
 
-/// Top-level response model with only the fields needed to reach `data`.
+// --- ProfileResponse class is unchanged and correct ---
 class ProfileResponse {
   final Profile data;
   final String? message;
@@ -13,11 +13,9 @@ class ProfileResponse {
     this.status,
   });
 
-  /// Create from raw JSON string.
   factory ProfileResponse.fromJsonString(String source) =>
       ProfileResponse.fromMap(jsonDecode(source) as Map<String, dynamic>);
 
-  /// Create from already-decoded map.
   factory ProfileResponse.fromMap(Map<String, dynamic> map) {
     final dataMap = map['data'] as Map<String, dynamic>? ?? const {};
     return ProfileResponse(
@@ -35,8 +33,6 @@ class ProfileResponse {
 
   String toJsonString() => jsonEncode(toMap());
 
-  /// Safe factory using try/catch/finally. Returns null on failure.
-  /// Optionally reports the error via [onError].
   static ProfileResponse? safeFromJsonString(
     String source, {
     void Function(Object error)? onError,
@@ -47,34 +43,38 @@ class ProfileResponse {
       if (onError != null) onError(e);
       return null;
     } finally {
-      // no-op: placeholder for cleanup hooks
+      // no-op
     }
   }
 }
 
-/// Only the fields required by the app: first name, last name, email.
+// --- UPDATED Profile class ---
 class Profile {
+  final int id; // <-- ADDED
   final String firstName;
   final String lastName;
   final String email;
+  final String dashboard; // <-- ADDED
 
   const Profile({
+    required this.id, // <-- ADDED
     required this.firstName,
     required this.lastName,
     required this.email,
+    required this.dashboard, // <-- ADDED
   });
 
   factory Profile.fromMap(Map<String, dynamic> map) {
-    // Source keys are snake_case in the provided JSON.
     return Profile(
+      // Safely parse 'id' from num to int
+      id: (map['id'] as num? ?? 0).toInt(), // <-- ADDED
       firstName: (map['first_name'] ?? '').toString(),
       lastName: (map['last_name'] ?? '').toString(),
       email: (map['email'] ?? '').toString(),
+      dashboard: (map['dashboard'] ?? '').toString(), // <-- ADDED
     );
   }
 
-  /// Safe builder using try/catch/finally.
-  /// Returns an empty-profile on failure to keep call-sites simple.
   static Profile safeFromMap(
     Map<String, dynamic>? map, {
     void Function(Object error)? onError,
@@ -83,31 +83,44 @@ class Profile {
       return Profile.fromMap(map ?? const {});
     } catch (e) {
       if (onError != null) onError(e);
-      return const Profile(firstName: '', lastName: '', email: '');
+      // Return with default values for new fields
+      return const Profile(
+        id: 0, // <-- ADDED
+        firstName: '',
+        lastName: '',
+        email: '',
+        dashboard: '', // <-- ADDED
+      );
     } finally {
-      // no-op: placeholder for cleanup hooks
+      // no-op
     }
   }
 
   Map<String, dynamic> toMap() => {
+        'id': id, // <-- ADDED
         'first_name': firstName,
         'last_name': lastName,
         'email': email,
+        'dashboard': dashboard, // <-- ADDED
       };
 
   Profile copyWith({
+    int? id, // <-- ADDED
     String? firstName,
     String? lastName,
     String? email,
+    String? dashboard, // <-- ADDED
   }) {
     return Profile(
+      id: id ?? this.id, // <-- ADDED
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
+      dashboard: dashboard ?? this.dashboard, // <-- ADDED
     );
   }
 
   @override
   String toString() =>
-      'Profile(firstName: $firstName, lastName: $lastName, email: $email)';
+      'Profile(id: $id, firstName: $firstName, lastName: $lastName, email: $email, dashboard: $dashboard)'; // <-- UPDATED
 }

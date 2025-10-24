@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:peach_iq/QR/qr_code_widget.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/widgets/header_card_widget.dart';
 import 'package:provider/provider.dart';
@@ -85,13 +86,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       name: p.fullName,
                       subtitle: p.email.isNotEmpty ? p.email : null,
                       pageheader: '       Change Password',
-                      onQrCodeTap: () {
-                        // TODO: Implement QR code functionality
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('QR Code feature coming soon!')),
-                        );
-                      },
+                     onQrCodeTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => const QRCodeDialog(),
+                    );
+                  },
                     ),
                   ),
                   Positioned(
