@@ -2,6 +2,7 @@ import 'dart:convert';
 // Removed: dart:io, dart:typed_data, dart:ui, flutter/rendering.dart, path_provider, share_plus
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Kept for Clipboard
+import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:peach_iq/Models/profile_model.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
@@ -30,7 +31,7 @@ class QRCodeWidget extends StatelessWidget {
             width: size ?? 160,
             height: size ?? 160,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Center(
@@ -115,6 +116,8 @@ class QRCodeDialog extends StatelessWidget {
       ),
       child: Container(
         padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(12)),
+      
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -123,6 +126,7 @@ class QRCodeDialog extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
+                color: AppColors.black
               ),
             ),
             const SizedBox(height: 12),
@@ -137,8 +141,8 @@ class QRCodeDialog extends StatelessWidget {
               'Scan this QR code to view your profile information',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
+                fontSize: 12.5,
+                color: AppColors.black,
               ),
             ),
             const SizedBox(height: 10),
@@ -148,12 +152,12 @@ class QRCodeDialog extends StatelessWidget {
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
+                  child: const Text('Close',style: TextStyle(color: AppColors.primary,fontWeight: FontWeight.w700),),
                 ),
-                ElevatedButton(
-                  onPressed: () => _copyQrText(context),
-                  child: const Text('Copy Text'),
-                ),
+                // GestureDetector(
+                //   onTap: () => _copyQrText(context),
+                //   child: const Text('Copy Text', style: TextStyle(color: AppColors.primary,fontWeight: FontWeight.w700),),
+                // ),
               ],
             ),
           ],
@@ -163,44 +167,4 @@ class QRCodeDialog extends StatelessWidget {
   }
 }
 
-//
-// --- NO CHANGES TO THIS WIDGET ---
-//
-class QRCodePage extends StatelessWidget {
-  const QRCodePage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('QR Code'),
-        centerTitle: true,
-      ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            QRCodeWidget(size: 250),
-            SizedBox(height: 24),
-            Text(
-              'Your Profile QR Code',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Share this QR code to let others view your profile information',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
