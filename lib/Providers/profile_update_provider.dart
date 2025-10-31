@@ -37,6 +37,10 @@ class ProfileUpdateProvider with ChangeNotifier {
             'caregiver_id',
             decodedResponse.data.caregiverDetails.caregiverId,
           );
+          await prefs.setString(
+            'caregiver_identifier',
+            decodedResponse.data.caregiverDetails.caregiverIdentifier,
+          );
         } catch (_) {}
         return decodedResponse.data;
       } else {

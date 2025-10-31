@@ -50,6 +50,7 @@ class ProfileData {
 
 class CaregiverDetails {
   final int caregiverId;
+  final String caregiverIdentifier;
   final int gender;
   final String socialId;
   final int countryId;
@@ -71,6 +72,7 @@ class CaregiverDetails {
 
   CaregiverDetails({
     required this.caregiverId,
+    required this.caregiverIdentifier,
     required this.gender,
     required this.socialId,
     required this.countryId,
@@ -94,6 +96,7 @@ class CaregiverDetails {
   factory CaregiverDetails.fromJson(Map<String, dynamic> json) =>
       CaregiverDetails(
         caregiverId: json["caregiver_id"],
+        caregiverIdentifier: json["caregiver_identifier"] ?? "",
         gender: json["gender"],
         socialId: json["social_id"] ?? "",
         countryId: json["country_id"],
