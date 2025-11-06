@@ -61,76 +61,80 @@ class _InboxScreenState extends State<InboxScreen> {
               width: 1,
             ),
           ),
-          child: ListTile(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            title: Row(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Notification content
                 Expanded(
-                  child: Text(
-                    notification.title,
-                    style: TextStyle(
-                      fontWeight: notification.isRead
-                          ? FontWeight.w600
-                          : FontWeight.w700,
-                      fontSize: 15,
-                      color: AppColors.black,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Use message as main content (no title)
+                      Text(
+                        notification.message,
+                        style: TextStyle(
+                          fontWeight: notification.isRead
+                              ? FontWeight.w500
+                              : FontWeight.w600,
+                          fontSize: 14,
+                          color: AppColors.black,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Timestamp
+                      Text(
+                        DateFormat('d MMM yyyy, h:mm a').format(notification.timestamp),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[500],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Mark as read radio button
+                Tooltip(
+                  message: 'Mark as read',
+                  child: GestureDetector(
+                    onTap: () async {
+                      if (!notification.isRead) {
+                        // Mark as read using the correct method
+                        await Provider.of<NotificationProvider>(context, listen: false)
+                            .markOneAsRead(notification.id);
+                      }
+                    },
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: notification.isRead 
+                              ? Colors.green 
+                              : Colors.grey.withValues(alpha: 0.4),
+                          width: 2,
+                        ),
+                        color: notification.isRead 
+                            ? Colors.green 
+                            : Colors.transparent,
+                      ),
+                      child: notification.isRead
+                          ? const Icon(
+                              Icons.check,
+                              size: 12,
+                              color: Colors.white,
+                            )
+                          : null,
                     ),
                   ),
                 ),
-                if (!notification.isRead)
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
               ],
             ),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // This is the partial message
-                  Text(
-                    notification.message.length > 80
-                        ? '${notification.message.substring(0, 80)}...'
-                        : notification.message,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                      height: 1.2,
-                    ),
-                  ),
-                  // --- 2. ADDED TIMESTAMP DISPLAY ---
-                  const SizedBox(height: 4), 
-                  Text( 
-                    DateFormat('d MMM yyyy, h:mm a').format(notification.timestamp),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey[500],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  // --- END OF ADDITION ---
-                ],
-              ),
-            ),
-            onTap: () async {
-              // This correctly passes all required data
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NotificationDetailsScreen(
-                    // Pass the full object
-                    notification: notification,
-                  ),
-                ),
-              );
-            },
           ),
         );
       },
@@ -187,14 +191,12 @@ class _InboxScreenState extends State<InboxScreen> {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               TextButton(
-                                // --- THIS IS THE FIX ---
                                 onPressed: () {
                                   // Call the provider method directly
                                   context
                                       .read<NotificationProvider>()
                                       .markAllAsRead();
                                 },
-                                // --- END OF FIX ---
                                 child: const Text(
                                   'Mark All as Read',
                                   style: TextStyle(

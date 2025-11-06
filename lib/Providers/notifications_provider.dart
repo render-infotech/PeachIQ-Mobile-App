@@ -15,6 +15,9 @@ class NotificationProvider with ChangeNotifier {
   List<NotificationModel> get notifications => _notifications;
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
+  
+  // Get count of unread notifications
+  int get unreadCount => _notifications.where((n) => !n.isRead).length;
 
   void clearError() {
     _errorMessage = '';

@@ -46,8 +46,6 @@ class NotificationModel {
     );
   }
 
-  // --- THIS IS THE FIX ---
-  // --- ADD THIS METHOD TO YOUR MODEL FILE ---
   /// Creates a copy of this object with updated fields.
   NotificationModel copyWith({
     int? id,

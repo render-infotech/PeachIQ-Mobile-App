@@ -23,6 +23,7 @@ import 'package:peach_iq/screens/chech_in/check_in_screen.dart';
 import 'package:peach_iq/widgets/bottom_nav.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
 import 'package:peach_iq/splash.dart';
+import 'package:peach_iq/Providers/notifications_provider.dart';
 import 'package:provider/provider.dart';
 
 class AppRoutes {
@@ -99,12 +100,17 @@ class _AppShellState extends State<AppShell> {
           child: Scaffold(
             body: widget.child ??
                 IndexedStack(index: _currentIndex, children: _pages),
-            bottomNavigationBar: AppBottomNav(
-              currentIndex: _currentIndex,
-              onTap: _onBottomNavTap,
-              selectedItemColor: Colors.white,
-              unselectedItemColor: Colors.white,
-              backgroundColor: AppColors.primary,
+            bottomNavigationBar: Consumer<NotificationProvider>(
+              builder: (context, notificationProvider, child) {
+                return AppBottomNav(
+                  currentIndex: _currentIndex,
+                  onTap: _onBottomNavTap,
+                  selectedItemColor: Colors.white,
+                  unselectedItemColor: Colors.white,
+                  backgroundColor: AppColors.primary,
+                  notificationCount: notificationProvider.unreadCount,
+                );
+              },
             ),
           ),
         );

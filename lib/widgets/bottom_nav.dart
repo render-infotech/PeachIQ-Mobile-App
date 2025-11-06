@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:peach_iq/shared/themes/Appcolors.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -7,6 +8,7 @@ class AppBottomNav extends StatelessWidget {
   final Color selectedItemColor;
   final Color unselectedItemColor;
   final Color? backgroundColor;
+  final int notificationCount;
 
   const AppBottomNav({
     super.key,
@@ -15,6 +17,7 @@ class AppBottomNav extends StatelessWidget {
     required this.selectedItemColor,
     required this.unselectedItemColor,
     required this.backgroundColor,
+    this.notificationCount = 0,
   });
 
   @override
@@ -44,7 +47,7 @@ class AppBottomNav extends StatelessWidget {
         selectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.w900,
           fontFamily: 'Manrope',
-          fontSize: 12, // Reduced from 14
+          fontSize: 10.5, // Reduced from 14
         ),
         unselectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.w400,
@@ -52,26 +55,55 @@ class AppBottomNav extends StatelessWidget {
           fontSize: 10, // Reduced from 14
         ),
         // --- END OF FIX ---
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(
               CupertinoIcons.home,
             ),
             label: 'Home',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.access_time_outlined),
             label: 'CheckIn',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.calendar_month_outlined),
             label: 'Schedule',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_none),
-            label: 'Notification',
+            icon: Stack(
+              children: [
+                const Icon(Icons.notifications_none),
+                if (notificationCount > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        notificationCount > 99 ? '99+' : notificationCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            label: 'Notifications',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.profile_circled),
             label: 'Profile',
           ),
