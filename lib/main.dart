@@ -1,4 +1,3 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:peach_iq/Providers/available_shifts_provider.dart';
 import 'package:peach_iq/Providers/calender_provider.dart';
@@ -8,6 +7,7 @@ import 'package:peach_iq/Providers/document_provider.dart';
 import 'package:peach_iq/Providers/forgot_password_provider.dart';
 import 'package:peach_iq/Providers/get_address_details_provider.dart';
 import 'package:peach_iq/Providers/location_provider.dart';
+import 'package:peach_iq/Providers/notifications_provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/Providers/profile_update_provider.dart';
 import 'package:peach_iq/Providers/response_provider.dart';
@@ -30,7 +30,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // LOADER PROVIDER HERE
         ChangeNotifierProvider(create: (_) => LoadingProvider()),
         ChangeNotifierProvider(create: (_) => LoginProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
@@ -46,6 +45,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ContentPageProvider()),
         ChangeNotifierProvider(create: (_) => DocumentProvider()),
         ChangeNotifierProvider(create: (_) => AddressProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: MaterialApp(
         title: 'Peach iQ',

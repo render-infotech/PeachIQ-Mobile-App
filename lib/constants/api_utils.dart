@@ -62,9 +62,20 @@ class ApiUrls {
   // get States
   static String getStates({required int countryId}) =>
       '$baseUrl/states/?country_id=$countryId';
+
   // get cities
   static String getCities({required int countryId, required int stateId}) =>
       '$baseUrl/cities/?country_id=$countryId&state_id=$stateId';
+
+  // get my notifications
+  static String getMynotifications() =>
+      '$baseUrl/caregiver-dashboard/notifications';
+  // post notification read
+  static String postNotificationread() =>
+      '$baseUrl/caregiver-dashboard/notifications/mark-read';
+  // post all ntification read
+  static String postAllnotificationread() =>
+      '$baseUrl/caregiver-dashboard/notifications/mark-read-all';
 
   static void debugUrls() {
     print('Base URL: $baseUrl');
