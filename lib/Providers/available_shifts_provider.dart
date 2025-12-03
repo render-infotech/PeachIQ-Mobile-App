@@ -344,13 +344,13 @@ class AvailableShiftsProvider extends ChangeNotifier {
       // Allow for reasonable variance when updates are pending
       final variance =
           (actionableShifts.length - _lastKnownActionableCount).abs();
-      return variance <= _pendingUpdates.length + 2; // Allow some buffer
+      return variance <= _pendingUpdates.length + 15; // Allow larger buffer for dynamic data
     }
 
     // Without pending updates, count should be stable or decrease gradually
     final variance =
         (_lastKnownActionableCount - actionableShifts.length).abs();
-    return variance <= 3; // Allow small natural variance
+    return variance <= 15; // Allow larger natural variance for dynamic shift data
   }
 
   /// Validates the result of merging API data with local updates

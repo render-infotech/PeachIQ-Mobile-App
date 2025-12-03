@@ -43,18 +43,22 @@ class AppBottomNav extends StatelessWidget {
           color: unselectedItemColor,
         ),
         backgroundColor: backgroundColor,
-        // --- FIX IS HERE ---
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        selectedFontSize: 11.5,
+        unselectedFontSize: 11,
         selectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.w900,
-          fontFamily: 'Manrope',
-          fontSize: 10.5, // Reduced from 14
+          fontWeight: FontWeight.w800,
+          fontFamily: 'NunitoSans',
+          color: Colors.white,
+          inherit: false,
         ),
         unselectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.w400,
-          fontFamily: 'Manrope',
-          fontSize: 10, // Reduced from 14
+          fontWeight: FontWeight.w800,
+          fontFamily: 'NunitoSans',
+          color: Colors.white,
+          inherit: false,
         ),
-        // --- END OF FIX ---
         items: [
           const BottomNavigationBarItem(
             icon: Icon(
@@ -79,21 +83,28 @@ class AppBottomNav extends StatelessWidget {
                     right: 0,
                     top: 0,
                     child: Container(
-                      padding: const EdgeInsets.all(2),
+                      padding: const EdgeInsets.all(1),
                       decoration: BoxDecoration(
-                        color: AppColors.primary,
+                        color: AppColors.white,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       constraints: const BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
+                        minWidth: 14,
+                        minHeight: 12,
                       ),
                       child: Text(
                         notificationCount > 99 ? '99+' : notificationCount.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w900,
+                          shadows: [
+                            Shadow(
+                              offset: const Offset(1.0, 1.0),
+                              blurRadius: 2.0,
+                              color: Colors.black.withValues(alpha: 0.5),
+                            ),
+                          ],
                         ),
                         textAlign: TextAlign.center,
                       ),

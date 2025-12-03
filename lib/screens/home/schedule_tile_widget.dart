@@ -21,7 +21,7 @@ class ScheduleTile extends StatelessWidget {
   // This helper function for date suffixes is unchanged.
   (String prefix, String suffix, String postfix) _splitOrdinal(String input) {
     final parts = input.split(' ');
-    if (parts.length < 4) return (input, '', '');
+    if (parts.length < 2) return (input, '', '');
     final idx = parts.indexWhere((t) => RegExp(r'^\d+[a-zA-Z]+$').hasMatch(t));
     if (idx == -1) return (input, '', '');
     final m = RegExp(r'^(\d+)([a-zA-Z]+)$').firstMatch(parts[idx]);
@@ -93,6 +93,7 @@ class ScheduleTile extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 16,
                                 color: Colors.black87,
+                                fontWeight: FontWeight.w600,
                               ),
                             )
                           : RichText(
@@ -102,7 +103,8 @@ class ScheduleTile extends StatelessWidget {
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.black87,
-                                  fontFamily: 'Roboto',
+                                  fontFamily: 'Manrope',
+                                  fontWeight: FontWeight.w600,
                                 ),
                                 children: [
                                   TextSpan(text: split.$1),
@@ -115,7 +117,7 @@ class ScheduleTile extends StatelessWidget {
                                         style: const TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.black87,
+                                          color: AppColors.black,
                                         ),
                                       ),
                                     ),
@@ -140,7 +142,7 @@ class ScheduleTile extends StatelessWidget {
                                 return Icon(
                                   Icons.access_time,
                                   size: 20,
-                                  color: AppColors.primary,
+                                  color: AppColors.accent,
                                 );
                               }
                             },
@@ -150,7 +152,7 @@ class ScheduleTile extends StatelessWidget {
                             time,
                             style: TextStyle(
                               fontSize: 13,
-                              color: AppColors.primary,
+                              color: AppColors.accent,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

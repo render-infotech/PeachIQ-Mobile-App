@@ -79,7 +79,10 @@ class NotificationProvider with ChangeNotifier {
   Future<void> markOneAsRead(int notificationId) async {
     final Uri url = Uri.parse(ApiUrls.postNotificationread());
     
-    // --- BETTER DEBUGGING ---
+    // --- ENHANCED DEBUGGING ---
+    print('🟢 DEBUG: markOneAsRead() called for notification ID: $notificationId');
+    print('🟢 DEBUG: Current stack trace:');
+    print(StackTrace.current);
     print('--- Calling markOneAsRead ---');
     print('URL: $url');
     final String requestBody = jsonEncode({'id': notificationId});
@@ -119,7 +122,10 @@ class NotificationProvider with ChangeNotifier {
   Future<void> markAllAsRead() async {
     final Uri url = Uri.parse(ApiUrls.postAllnotificationread());
 
-    // --- BETTER DEBUGGING ---
+    // --- ENHANCED DEBUGGING ---
+    print('🔴 DEBUG: markAllAsRead() called');
+    print('🔴 DEBUG: Current stack trace:');
+    print(StackTrace.current);
     print('--- Calling markAllAsRead ---');
     print('URL: $url');
     // --- END DEBUGGING ---

@@ -21,18 +21,18 @@ class NotificationDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: AppColors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
           'Notification Details',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.white,
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -50,12 +50,12 @@ class NotificationDetailsScreen extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: notification.isRead // <-- Use model
-                        ? Colors.grey.withValues(alpha: 0.2)
+                        ? AppColors.disabled
                         : AppColors.primary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: notification.isRead // <-- Use model
-                          ? Colors.grey.withValues(alpha: 0.4)
+                          ? AppColors.border
                           : AppColors.primary.withValues(alpha: 0.3),
                     ),
                   ),
@@ -65,7 +65,7 @@ class NotificationDetailsScreen extends StatelessWidget {
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: notification.isRead // <-- Use model
-                          ? Colors.grey[700]
+                          ? AppColors.textSecondary
                           : AppColors.primary,
                     ),
                   ),
@@ -76,7 +76,7 @@ class NotificationDetailsScreen extends StatelessWidget {
                   DateFormat('d MMM yyyy, h:mm a').format(notification.timestamp),
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[600],
+                    color: AppColors.accent,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -95,18 +95,18 @@ class NotificationDetailsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Container(
               height: 1,
-              color: Colors.grey.withValues(alpha: 0.3),
+              color: AppColors.divider,
             ),
             const SizedBox(height: 20),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withValues(alpha: 0.1),
+                    color: AppColors.border.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -116,7 +116,7 @@ class NotificationDetailsScreen extends StatelessWidget {
                 notification.message, // <-- Use model
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey[800],
+                  color: AppColors.textPrimary,
                   height: 1.6,
                   letterSpacing: 0.3,
                 ),

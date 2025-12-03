@@ -15,22 +15,32 @@ class CompactTextButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       style: TextButton.styleFrom(
-        foregroundColor: Colors.white,
-        backgroundColor:
-            AppColors.primary, // replace with AppColors.primary if needed
+        foregroundColor: AppColors.white,
+        backgroundColor: AppColors.primary, // Keep original primary color
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         fixedSize: const Size.fromHeight(32),
         minimumSize: const Size(0, 28),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         textStyle: const TextStyle(
           fontSize: 14,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w700, // Increased weight for better visibility
           letterSpacing: 0.3,
-          fontFamily: 'Manrope',
+          fontFamily: 'NunitoSans',
         ),
       ),
       onPressed: onPressed,
-      child: Text(label),
+      child: Text(
+        label,
+        style: const TextStyle(
+          shadows: [
+            Shadow(
+              offset: Offset(0.5, 0.5),
+              blurRadius: 1.0,
+              color: Colors.black26,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

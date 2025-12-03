@@ -1,7 +1,6 @@
-import 'package:awesome_icons/awesome_icons.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
+import 'package:peach_iq/shared/themes/typography.dart';
 
 class HeaderCard extends StatelessWidget {
   final String name;
@@ -50,20 +49,33 @@ class HeaderCard extends StatelessWidget {
                   ),
                   Text(
                     'Welcome, ${name.isNotEmpty ? '$name' : ''}!',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
+                    style: AppTypography.h5.copyWith(
+                      color: AppColors.white,
                       fontWeight: FontWeight.w700,
+                      shadows: [
+                        Shadow(
+                          offset: const Offset(0.5, 0.5),
+                          blurRadius: 1.0,
+                          color: Colors.black.withValues(alpha: 0.3),
+                        ),
+                      ],
                     ),
                   ),
                   if (subtitle != null && subtitle!.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600, // Increased weight for better visibility
+                        shadows: [
+                          Shadow(
+                            offset: const Offset(0.5, 0.5),
+                            blurRadius: 1.0,
+                            color: Colors.black.withValues(alpha: 0.25),
+                          ),
+                        ],
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -88,12 +100,19 @@ class HeaderCard extends StatelessWidget {
                         size: 20,
                       ),
                       const SizedBox(height: 2),
-                      const Text(
+                      Text(
                         "QR Code",
-                        style: TextStyle(
+                        style: AppTypography.caption.copyWith(
                           color: AppColors.white,
                           fontSize: 10,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
+                          shadows: [
+                            Shadow(
+                              offset: const Offset(0.5, 0.5),
+                              blurRadius: 1.0,
+                              color: Colors.black.withValues(alpha: 0.25),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -106,10 +125,16 @@ class HeaderCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             pageheader!,
-            style: const TextStyle(
+            style: AppTypography.h5.copyWith(
               color: AppColors.white,
-              fontSize: 18,
               fontWeight: FontWeight.w700,
+              shadows: [
+                Shadow(
+                  offset: const Offset(0.5, 0.5),
+                  blurRadius: 1.0,
+                  color: Colors.black.withValues(alpha: 0.3),
+                ),
+              ],
             ),
           ),
         ],

@@ -105,8 +105,8 @@ class _AppShellState extends State<AppShell> {
                 return AppBottomNav(
                   currentIndex: _currentIndex,
                   onTap: _onBottomNavTap,
-                  selectedItemColor: Colors.white,
-                  unselectedItemColor: Colors.white,
+                  selectedItemColor: AppColors.white,
+                  unselectedItemColor: AppColors.white,
                   backgroundColor: AppColors.primary,
                   notificationCount: notificationProvider.unreadCount,
                 );

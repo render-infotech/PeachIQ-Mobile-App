@@ -59,7 +59,7 @@ class AnimatedChoiceButton extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              fontFamily: 'Manrope',
+              fontFamily: 'NunitoSans',
               color: textColor,
             ),
           ),

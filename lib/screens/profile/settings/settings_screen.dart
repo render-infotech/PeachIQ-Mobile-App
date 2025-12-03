@@ -10,6 +10,11 @@ import 'package:provider/provider.dart';
 import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/screens/auth/login.dart';
 import 'package:peach_iq/routes.dart';
+import 'package:peach_iq/constants/app_config.dart';
+// New imports for functionality
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:in_app_review/in_app_review.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,6 +23,120 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  // Instance for handling in-app reviews
+  final InAppReview _inAppReview = InAppReview.instance;
+
+  void _handleRateApp() async {
+    try {
+      // Check if the InAppReview library is available on the current device
+      if (await _inAppReview.isAvailable()) {
+        // PRO METHOD: openStoreListing() is safer for buttons.
+        // It takes the user directly to the store page to leave a review.
+        // It avoids the strict quotas of requestReview().
+        await _inAppReview.openStoreListing(
+          appStoreId: AppConfig.appStoreId, 
+        );
+      } else {
+        // Fallback: If the native library fails, try opening the URL manually
+        _launchStoreUrl();
+      }
+    } catch (e) {
+      debugPrint('Error launching store listing: $e');
+      // Final Fallback: Try launching the browser URL
+      _launchStoreUrl();
+    }
+  }
+
+  void _launchStoreUrl() async {
+    try {
+      final uri = Uri.parse(AppConfig.storeUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          _showErrorDialog('Unable to open app store. Please try again later.');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorDialog('Unable to open app store. Please try again later.');
+      }
+    }
+  }
+
+  void _handleShareApp() async {
+    try {
+      // Uses share_plus to open the native share sheet (WhatsApp, Messages, etc.)
+      await Share.share(
+        AppConfig.shareMessage,
+        subject: 'Check out ${AppConfig.appName}!', // Subject helps for Email apps
+      );
+    } catch (e) {
+      debugPrint('Error sharing app: $e');
+      if (mounted) {
+        _showErrorDialog('Unable to share app. Please try again later.');
+      }
+    }
+  }
+
+  void _showComingSoonDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(color: AppColors.black),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: AppColors.black),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Got it',
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        title: const Text(
+          'Error',
+          style: TextStyle(color: AppColors.black),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: AppColors.black),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'OK',
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _handleSignOut(BuildContext context) {
     showDialog(
         context: context,
@@ -174,14 +293,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       leadingColor: const Color(0xFF7C4DFF),
                       leadingIcon: CupertinoIcons.star_fill,
                       title: 'Rate This App',
-                      onTap: () {},
+                      onTap: _handleRateApp,
                     ),
                     divider,
                     _SettingsTile(
                       leadingColor: const Color(0xFFFF7043),
                       leadingIcon: CupertinoIcons.share_solid,
                       title: 'Share This App',
-                      onTap: () {},
+                      onTap: _handleShareApp,
                     ),
                     divider,
                     _SettingsTile(

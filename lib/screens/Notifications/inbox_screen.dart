@@ -36,7 +36,7 @@ class _InboxScreenState extends State<InboxScreen> {
           'No notifications',
           style: TextStyle(
             fontSize: 16,
-            color: Colors.grey,
+            color: AppColors.textSecondary,
           ),
         ),
       );
@@ -51,12 +51,12 @@ class _InboxScreenState extends State<InboxScreen> {
           margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
             color: notification.isRead
-                ? Colors.white
+                ? AppColors.cardBackground
                 : AppColors.primary.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: notification.isRead
-                  ? Colors.grey.withValues(alpha: 0.2)
+                  ? AppColors.border.withValues(alpha: 0.5)
                   : AppColors.primary.withValues(alpha: 0.2),
               width: 1,
             ),
@@ -88,9 +88,9 @@ class _InboxScreenState extends State<InboxScreen> {
                       Text(
                         DateFormat('d MMM yyyy, h:mm a').format(notification.timestamp),
                         style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[500],
-                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -115,19 +115,19 @@ class _InboxScreenState extends State<InboxScreen> {
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: notification.isRead 
-                              ? Colors.green 
-                              : Colors.grey.withValues(alpha: 0.4),
+                              ? AppColors.success 
+                              : AppColors.border,
                           width: 2,
                         ),
                         color: notification.isRead 
-                            ? Colors.green 
+                            ? AppColors.success 
                             : Colors.transparent,
                       ),
                       child: notification.isRead
                           ? const Icon(
                               Icons.check,
                               size: 12,
-                              color: Colors.white,
+                              color: AppColors.white,
                             )
                           : null,
                     ),
@@ -164,6 +164,10 @@ class _InboxScreenState extends State<InboxScreen> {
             Expanded(
               child: Consumer<NotificationProvider>(
                 builder: (context, provider, child) {
+                  // Debug Consumer rebuilds
+                  print('🟡 DEBUG: NotificationProvider Consumer rebuilt');
+                  print('🟡 DEBUG: Unread count: ${provider.notifications.where((n) => !n.isRead).length}');
+                  
                   if (provider.isLoading) {
                     return const Center(
                       child: CircularProgressIndicator(color: AppColors.primary),
@@ -174,12 +178,15 @@ class _InboxScreenState extends State<InboxScreen> {
                     return Center(
                       child: Text(
                         provider.errorMessage,
-                        style: const TextStyle(color: Colors.red),
+                        style: const TextStyle(color: AppColors.error),
                       ),
                     );
                   }
 
                   final hasUnread = provider.notifications.any((n) => !n.isRead);
+                  
+                  // Debug button visibility
+                  print('🟠 DEBUG: hasUnread = $hasUnread, will show Mark All button: $hasUnread');
 
                   return Column(
                     mainAxisSize: MainAxisSize.min,
@@ -192,6 +199,11 @@ class _InboxScreenState extends State<InboxScreen> {
                             children: [
                               TextButton(
                                 onPressed: () {
+                                  // Add debugging to track when this is called
+                                  print('🔴 DEBUG: Mark All as Read button pressed');
+                                  print('🔴 DEBUG: Stack trace:');
+                                  print(StackTrace.current);
+                                  
                                   // Call the provider method directly
                                   context
                                       .read<NotificationProvider>()

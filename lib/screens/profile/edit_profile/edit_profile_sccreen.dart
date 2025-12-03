@@ -127,7 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _ProfileTile(
                                 color: Colors.black,
                                 icon: Icons.email_outlined,
-                                iconSize: 26,
+                                iconSize: 20,
                                 title: 'Email',
                                 subtitle: profileData.email ?? 'Not available',
                               ),
@@ -135,7 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _ProfileTile(
                                 color: const Color(0xFFFFB020),
                                 icon: CupertinoIcons.phone_fill,
-                                iconSize: 26,
+                                iconSize: 20,
                                 iconColor: Colors.black,
                                 title: 'Mobile Number',
                                 subtitle:
@@ -185,7 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _ProfileTile(
                                 color: const Color.fromARGB(255, 230, 231, 241),
                                 icon: CupertinoIcons.house_fill,
-                                iconSize: 26,
+                                iconSize: 20,
                                 iconColor: const Color(0xFF7C4DFF),
                                 title: 'Address',
                                 subtitle: _formatAddress(caregiverDetails),
@@ -255,7 +255,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _ProfileTile(
                                 color: const Color(0xFF17C964),
                                 icon: CupertinoIcons.pencil,
-                                iconSize: 26,
+                                iconSize: 20,
                                 title: 'Change Password',
                                 onTap: () {
                                   AppNavigator.toChangePassword(context);
@@ -265,7 +265,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _ProfileTile(
                                 color: const Color(0xFFFF7043),
                                 icon: CupertinoIcons.doc_text_fill,
-                                iconSize: 26,
+                                iconSize: 20,
                                 title: 'Documents',
                                 subtitle: 'Upload required documents',
                                 onTap: () {
@@ -276,7 +276,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _ProfileTile(
                                 color: const Color(0xFF3B82F6),
                                 icon: Icons.switch_account,
-                                iconSize: 26,
+                                iconSize: 20,
                                 title: 'Switch Profile',
                                 subtitle: 'Change to another profile',
                                 onTap: () {
@@ -332,7 +332,7 @@ class _ProfileTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final leading = CircleAvatar(
-      radius: 26,
+      radius: 18,
       backgroundColor: color ?? Colors.grey,
       child: Icon(
         icon ?? Icons.help_outline,

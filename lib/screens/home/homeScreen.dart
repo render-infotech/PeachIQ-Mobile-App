@@ -13,6 +13,7 @@ import 'package:peach_iq/Providers/profile_provider.dart';
 import 'package:peach_iq/Providers/available_shifts_provider.dart';
 import 'package:peach_iq/Providers/work_analysis_provider.dart';
 import 'package:peach_iq/shared/themes/Appcolors.dart';
+import 'package:peach_iq/shared/themes/typography.dart';
 import 'package:peach_iq/widgets/text_button.dart';
 import 'package:peach_iq/QR/qr_code_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -171,7 +172,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             final sortedActionable =
                                 List.of(shiftsProvider.actionableSchedules);
                             sortedActionable.sort((a, b) {
-                              // Primary: Sort by date only (year, month, day)
                               final aDateOnly = DateTime(a.startDate.year,
                                   a.startDate.month, a.startDate.day);
                               final bDateOnly = DateTime(b.startDate.year,
@@ -293,12 +293,8 @@ class _SectionHeader extends StatelessWidget {
             // Force text to a single line and add an ellipsis (...) on overflow
             softWrap: false,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
-              fontFamily: 'Manrope',
-              letterSpacing: 0.5,
-              color: AppColors.black,
+            style: AppTypography.h4.copyWith(
+              color: AppColors.textPrimary,
             ),
           ),
         ),
@@ -364,12 +360,11 @@ class _AnalysisRow extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               'Work Analysis - Month to Date',
-              style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.black),
+              style: AppTypography.h4.copyWith(
+                color: AppColors.textPrimary,
+              ),
             ),
             const SizedBox(height: 12),
             Row(
